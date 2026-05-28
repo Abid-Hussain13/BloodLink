@@ -24,7 +24,7 @@ namespace BloodLink.Database
                 SqliteCommand cmd = new SqliteCommand(sql, connection);
                 cmd.Parameters.AddWithValue("@id", patientRequest.Id);
                 cmd.Parameters.AddWithValue("@patientName", patientRequest.PatientName.ToString());
-                cmd.Parameters.AddWithValue("@patientAge", patientRequest.PatientAge);
+                cmd.Parameters.AddWithValue("@patientAge", patientRequest.PatientAge ?? (object)DBNull.Value);
                 cmd.Parameters.AddWithValue("@bloodGroup", EnumHelper.GetDescription(patientRequest.BloodGroup));
                 cmd.Parameters.AddWithValue("@unitsRequired", patientRequest.UnitsRequired <= 0 ? 0 : patientRequest.UnitsRequired);
                 cmd.Parameters.AddWithValue("@ward", (object?)patientRequest.Ward ?? (object)DBNull.Value);
@@ -169,6 +169,22 @@ namespace BloodLink.Database
                 return 0;
             }
         }
+
+        int IPatientRequestRepository.GetPatientsPendingToday()
+        {
+            try
+            {
+                using var connection = DatabaseHelper.GetConnection();
+                string sql = @"SELECT COUNT(*) FROM PatientRequests WHERE (CreatedAt >= datetime('now', '-24 hours') AND Status = 'Pending');";
+                using var command = new SqliteCommand(sql, connection);
+                return Convert.ToInt32(command.ExecuteScalar());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error fetching patient requests: {ex.Message}");
+                return 0;
+            }
+        }
         List<PatientModel> IPatientRequestRepository.getRecentPatientRequests()
         {
             var requests = new List<PatientModel>();
@@ -177,9 +193,9 @@ namespace BloodLink.Database
                 using var connection = DatabaseHelper.GetConnection();
 
                 const string sql = @"
-                    SELECT PatientName, BloodGroup, UnitsRequired, DoctorName, Status
+                    SELECT PatientName, BloodGroup, UnitsRequired, DoctorName, Status, CreatedAt
                     FROM PatientRequests
-                    WHERE CreatedAt >= datetime('now','-48 hours')
+                    WHERE (CreatedAt >= datetime('now','-24 hours') OR Status == 'Pending')
                     ORDER BY CreatedAt DESC;";
 
                 using var command = new SqliteCommand(sql, connection);
@@ -231,7 +247,9 @@ namespace BloodLink.Database
                     {
                         model.status = default;
                     }
-
+                    model.CreatedAt = !reader.IsDBNull(reader.GetOrdinal("CreatedAt"))
+                                    ? DateTime.Parse(reader.GetString(reader.GetOrdinal("CreatedAt")))
+                                    : DateTime.Now;
                     requests.Add(model);
                 }
             }

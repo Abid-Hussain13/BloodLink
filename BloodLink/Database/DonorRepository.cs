@@ -34,7 +34,7 @@ VALUES (@Id, @fullName, @bloodGroup, @phone, @city, @area, @age, @gender,
                 command.Parameters.AddWithValue("@nextEligibleDate", donor.NextEligibleDate.HasValue
                     ? donor.NextEligibleDate.Value.ToString("yyyy-MM-dd")
                     : (object)DBNull.Value);
-                command.Parameters.AddWithValue("@weight", donor.Weight);
+                command.Parameters.AddWithValue("@weight", donor.Weight.HasValue ? donor.Weight.Value : (object)DBNull.Value);
                 command.Parameters.AddWithValue("@lastDonationDate", donor.LastDonationDate.HasValue
                                                                         ? donor.LastDonationDate.Value.ToString("yyyy-MM-dd")
                                                                         : (object)DBNull.Value);
@@ -117,6 +117,22 @@ VALUES (@Id, @fullName, @bloodGroup, @phone, @city, @area, @age, @gender,
             return donors;
         }
 
+        public int DonorsThisMonth()
+        {
+            try
+            {
+                using SqliteConnection conn = DatabaseHelper.GetConnection();
+                string sql = @"SELECT COUNT(*) FROM Donors WHERE strftime('%Y-%m', CreatedAt) = strftime('%Y-%m', 'now');";
+                using SqliteCommand cmd = new SqliteCommand(sql, conn);
+                return Convert.ToInt32(cmd.ExecuteScalar());
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine("Error while getting donors joined this month");
+                throw;
+            }
+        }
+
 
         public List<Donor> SearchDonors(string searchTerm, List<string>? bloodGroups, DonorEligibility? eligibility)
         {
@@ -126,7 +142,7 @@ VALUES (@Id, @fullName, @bloodGroup, @phone, @city, @area, @age, @gender,
                 var conditions = new List<string>();
                 var parameters = new Dictionary<string, object>();
 
-                conditions.Add("(FullName LIKE @search OR City LIKE @search OR Phone LIKE @search)");
+                conditions.Add("(Id LIKE @search OR FullName LIKE @search OR City LIKE @search OR Phone LIKE @search)");
                 parameters["@search"] = $"%{searchTerm.Trim()}%";
 
                 if (bloodGroups != null && bloodGroups.Count > 0)
@@ -195,7 +211,7 @@ VALUES (@Id, @fullName, @bloodGroup, @phone, @city, @area, @age, @gender,
                 command.Parameters.AddWithValue("@age", donor.Age);
                 command.Parameters.AddWithValue("@gender", donor.Gender.ToString());
                 command.Parameters.AddWithValue("@isEligible", donor.IsEligible ? 1 : 0);
-                command.Parameters.AddWithValue("@weight", donor.Weight);
+                command.Parameters.AddWithValue("@weight", donor.Weight.HasValue ? donor.Weight.Value : (object)DBNull.Value);
                 command.Parameters.AddWithValue("@lastDonationDate", donor.LastDonationDate.HasValue
                                                                         ? donor.LastDonationDate.Value.ToString("yyyy-MM-dd")
                                                                         : (object)DBNull.Value);

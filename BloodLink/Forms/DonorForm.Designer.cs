@@ -520,7 +520,6 @@
             // tbID
             // 
             tbID.Dock = DockStyle.Top;
-            tbID.Enabled = false;
             tbID.Location = new Point(0, 20);
             tbID.Name = "tbID";
             tbID.PlaceholderText = "Auto Generated";

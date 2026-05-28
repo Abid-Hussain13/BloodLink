@@ -23,7 +23,7 @@ namespace BloodLink.Database
                 command.Parameters.AddWithValue("@BloodGroup", EnumHelper.GetDescription(unit.BloodGroup));
                 command.Parameters.AddWithValue("@CollectedDate", unit.CollectedDate.ToString("yyyy-MM-dd HH:mm:ss"));
                 command.Parameters.AddWithValue("@ExpiryDate", unit.ExpiryDate.ToString("yyyy-MM-dd HH:mm:ss"));
-                command.Parameters.AddWithValue("@DonorId", unit.DonorId);
+                command.Parameters.AddWithValue("@DonorId", unit.DonorId ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@Status", unit.Status.ToString());
                 command.Parameters.AddWithValue("@UserId", unit.UserId.ToString());
                 command.Parameters.AddWithValue("@Notes", unit.Notes ?? (object)DBNull.Value);
@@ -42,7 +42,7 @@ namespace BloodLink.Database
             try
             {
                 using SqliteConnection connection = DatabaseHelper.GetConnection();
-                string sql = @"UPDATE Bloodunits
+                string sql = @"UPDATE BloodUnits
                           SET BloodGroup = @bloodgroup,
                           CollectedDate = @collectedDate,
                           ExpiryDate = @expirydate,
@@ -56,7 +56,7 @@ namespace BloodLink.Database
                 command.Parameters.AddWithValue("@bloodgroup", EnumHelper.GetDescription(bloodunit.BloodGroup));
                 command.Parameters.AddWithValue("@collectedDate", bloodunit.CollectedDate.ToString("yyyy-MM-dd HH:mm:ss"));
                 command.Parameters.AddWithValue("@expirydate", bloodunit.ExpiryDate.ToString("yyyy-MM-dd HH:mm:ss"));
-                command.Parameters.AddWithValue("@donorId", bloodunit.DonorId);
+                command.Parameters.AddWithValue("@donorId", bloodunit.DonorId ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@status", EnumHelper.GetDescription(bloodunit.Status));
                 command.Parameters.AddWithValue("@userId", bloodunit.UserId.ToString());
                 command.Parameters.AddWithValue("@notes", bloodunit.Notes ?? (object)DBNull.Value);
@@ -147,6 +147,24 @@ namespace BloodLink.Database
             return bloodUnits;
         }
 
+        int IBloodUnitRepository.CollectionThisMonth()
+        {
+            try
+            {
+                using SqliteConnection conn = DatabaseHelper.GetConnection();
+                string sql = @"SELECT COUNT(*) FROM BloodUnits WHERE strftime('%Y-%m', CollectedDate) = strftime('%Y-%m', 'now');";
+
+                using SqliteCommand cmd = new SqliteCommand(sql, conn);
+
+                object result = cmd.ExecuteScalar();
+                return result != null ? Convert.ToInt32(result) : 0;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Something went wrong while getting total collection of blood units.");
+                throw;
+            }
+        }
         BloodUnitStats IBloodUnitRepository.GetBloodUnitStats()
         {
             BloodUnitStats stats = new BloodUnitStats();
@@ -154,7 +172,7 @@ namespace BloodLink.Database
             {
                 using SqliteConnection connection = DatabaseHelper.GetConnection();
 
-                using (SqliteCommand cmd = new SqliteCommand("SELECT COUNT(*) FROM BloodUnits", connection))
+                using (SqliteCommand cmd = new SqliteCommand("SELECT COUNT(*) FROM BloodUnits WHERE(Status == 'Available' OR Status == 'Reserved')", connection))
                 stats.TotalUnits = Convert.ToInt32(cmd.ExecuteScalar());
 
                 using (SqliteCommand cmd = new SqliteCommand("SELECT COUNT(*) FROM BloodUnits WHERE Status == 'Available'", connection))
@@ -203,9 +221,15 @@ namespace BloodLink.Database
             try
             {
                 using var connection = DatabaseHelper.GetConnection();
-                string sql = @"SELECT COUNT(*) FROM BloodUnits WHERE ExpiryDate <= @expiryThreshold AND Status == 'Available'";
+                string sql = @"SELECT COUNT(*) FROM BloodUnits 
+                       WHERE ExpiryDate <= @expiryThreshold 
+                       AND (Status = 'Available' OR Status = 'Reserved');";
                 using var command = new SqliteCommand(sql, connection);
-                var expiryThreshold = DateTime.UtcNow.AddDays(7).ToString("yyyy-MM-dd HH:mm:ss");
+
+                string? saved = AppSettingsRepository.GetSetting("ExpiryThreshold");
+                int days = int.TryParse(saved, out int d) ? d : 7;
+
+                var expiryThreshold = DateTime.UtcNow.AddDays(days).ToString("yyyy-MM-dd HH:mm:ss");
                 command.Parameters.AddWithValue("@expiryThreshold", expiryThreshold);
                 return Convert.ToInt32(command.ExecuteScalar());
             }
@@ -214,7 +238,7 @@ namespace BloodLink.Database
                 MessageBox.Show($"Error Fetching Expiring Soon Count : {ex.Message}");
                 return -1;
             }
-        } 
+        }
 
         Dictionary<string, int> IBloodUnitRepository.getExpiringUnits()
         {
@@ -222,10 +246,18 @@ namespace BloodLink.Database
             try
             {
                 using var connection = DatabaseHelper.GetConnection();
-                string sql = @"SELECT Id, ExpiryDate FROM BloodUnits WHERE ExpiryDate <= @expiryThreshold ORDER BY ExpiryDate ASC";
+                string sql = @"SELECT Id, ExpiryDate FROM BloodUnits 
+                       WHERE ExpiryDate <= @expiryThreshold 
+                       AND (Status = 'Available' OR Status = 'Reserved')
+                       ORDER BY ExpiryDate ASC";
                 using var command = new SqliteCommand(sql, connection);
-                var expiryThreshold = DateTime.UtcNow.AddDays(40).ToString("yyyy-MM-dd HH:mm:ss");
+
+                string? saved = AppSettingsRepository.GetSetting("ExpiryThreshold");
+                int days = int.TryParse(saved, out int d) ? d : 7;
+
+                var expiryThreshold = DateTime.UtcNow.AddDays(days).ToString("yyyy-MM-dd HH:mm:ss");
                 command.Parameters.AddWithValue("@expiryThreshold", expiryThreshold);
+
                 using var reader = command.ExecuteReader();
                 while (reader.Read())
                 {
@@ -235,7 +267,11 @@ namespace BloodLink.Database
                     if (string.IsNullOrWhiteSpace(Id) || string.IsNullOrWhiteSpace(expiryStr))
                         continue;
 
-                    if (!DateTime.TryParseExact(expiryStr, "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal, out DateTime expiryDate))
+                    if (!DateTime.TryParseExact(expiryStr, "yyyy-MM-dd HH:mm:ss",
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        System.Globalization.DateTimeStyles.AssumeUniversal |
+                        System.Globalization.DateTimeStyles.AdjustToUniversal,
+                        out DateTime expiryDate))
                     {
                         if (!DateTime.TryParse(expiryStr, out expiryDate))
                             continue;

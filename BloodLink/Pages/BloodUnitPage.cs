@@ -15,7 +15,6 @@ namespace BloodLink.Pages
         private BindingSource _myBindingSource = new BindingSource();
         private List<BloodUnit> _bloodUnitList = new List<BloodUnit>();
 
-        List<BloodUnit> fakeList = new List<BloodUnit>();
         public BloodUnitPage(BloodUnitService service, User currentUser)
         {
             InitializeComponent();
@@ -24,7 +23,6 @@ namespace BloodLink.Pages
 
             ApplyTheme();
             AdjustDgvHeight();
-            loadData();
             this.HandleCreated += BloodUnitPage_HandleCreated;
             dgvBloodUnits.SelectionChanged += dgvDonors_SelectionChanged;
         }
@@ -134,7 +132,7 @@ namespace BloodLink.Pages
                     BloodGroup = EnumHelper.GetDescription(bu.BloodGroup),
                     CollectedDate = bu.CollectedDate.ToString("dd-MM-yyyy"),
                     ExpiryDate = bu.ExpiryDate.ToString("dd-MM-yyyy"),
-                    DonorId = bu.DonorId.ToString() ?? "N/A",
+                    DonorId = string.IsNullOrWhiteSpace(bu.DonorId) ? "Walk-in" : bu.DonorId,
                     Status = EnumHelper.GetDescription(bu.Status),
                 }).ToList();
 
@@ -226,7 +224,6 @@ namespace BloodLink.Pages
             if (result == DialogResult.OK)
             {
                 loadData();
-                MessageBox.Show("Blood unit added successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
@@ -250,8 +247,7 @@ namespace BloodLink.Pages
             var result = form.ShowDialog();
             if (result == DialogResult.OK)
             {
-                loadData();
-                MessageBox.Show("Blood unit updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                ApplyFilters();
             }
         }
 
@@ -319,12 +315,29 @@ namespace BloodLink.Pages
                     BloodGroup = EnumHelper.GetDescription(bu.BloodGroup),
                     CollectedDate = bu.CollectedDate.ToString("dd-MM-yyyy"),
                     ExpiryDate = bu.ExpiryDate.ToString("dd-MM-yyyy"),
-                    DonorId = bu.DonorId.ToString() ?? "N/A",
+                    DonorId = string.IsNullOrWhiteSpace(bu.DonorId) ? "Walk-in" : bu.DonorId,
                     Status = EnumHelper.GetDescription(bu.Status),
                 }).ToList();
 
             _myBindingSource.DataSource = projected;
             dgvBloodUnits.DataSource = _myBindingSource;
+        }
+
+        private void dgvBloodUnits_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (e.ColumnIndex == 5 && e.Value != null)
+            {
+                string value = e.Value.ToString();
+
+                if (value == "Available")
+                    e.CellStyle.ForeColor = Color.Green;
+                else if (value == "Expired")
+                    e.CellStyle.ForeColor = Color.Red;
+                else if (value == "Reserved")
+                    e.CellStyle.ForeColor = Color.Orange;
+                else if (value == "Used")
+                    e.CellStyle.ForeColor = Color.Gray;
+            }
         }
     }
 }

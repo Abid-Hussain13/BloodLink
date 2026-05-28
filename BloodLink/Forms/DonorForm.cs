@@ -11,11 +11,11 @@ namespace BloodLink.Forms
         private readonly FormMode _mode;
         private readonly User _currentUser;
         private readonly PaintHelper _paintHelper = new PaintHelper();
+
         public DonorForm(DonorService donorService, User user)
         {
             InitializeComponent();
             this.StartPosition = FormStartPosition.CenterScreen;
-
 
             _donorService = donorService;
             _currentUser = user;
@@ -24,7 +24,7 @@ namespace BloodLink.Forms
             this.Load += DonorForm_Load;
         }
 
-        public DonorForm(DonorService donorService, User user,  FormMode mode, Donor donor)
+        public DonorForm(DonorService donorService, User user, FormMode mode, Donor donor)
         {
             InitializeComponent();
             this.StartPosition = FormStartPosition.CenterScreen;
@@ -36,10 +36,19 @@ namespace BloodLink.Forms
 
             this.Load += DonorForm_Load;
         }
+
         private void DonorForm_Load(object sender, EventArgs e)
         {
             ApplyTheme();
-            populate_ComboBoxes();  
+            populate_ComboBoxes();
+
+            if (_mode == FormMode.Edit)
+            {
+                lblDonorFormHeading.Text = "Updating Donor";
+                btnSave.Text = "Update";
+                tbID.ReadOnly = true;
+                tbID.Enabled = true;
+            }
 
             if (_mode != FormMode.Add)
             {
@@ -69,8 +78,7 @@ namespace BloodLink.Forms
                 lbl.Font = AppTheme.FontSmall;
             }
 
-            foreach (TextBox tb in new[] { tbID, tbFullName, tbPhone, tbCity
-                    , tbArea})
+            foreach (TextBox tb in new[] { tbID, tbFullName, tbPhone, tbCity, tbArea })
             {
                 tb.BackColor = AppTheme.CardBackground;
                 tb.ForeColor = AppTheme.PrimaryText;
@@ -88,15 +96,25 @@ namespace BloodLink.Forms
                 cb.DrawItem += _paintHelper.cbStyling_DrawItem!;
             }
 
-            foreach(NumericUpDown nud in new[] { nudAge, nudWeight })
+            foreach (NumericUpDown nud in new[] { nudAge, nudWeight })
             {
-                nudAge.BackColor = AppTheme.CardBackground;
-                nudAge.ForeColor = AppTheme.PrimaryText;
+                nud.BackColor = AppTheme.CardBackground;
+                nud.ForeColor = AppTheme.PrimaryText;
             }
-
 
             saveBtnStyling();
             cancelBtnStyling();
+
+            if (_mode == FormMode.Add)
+            {
+                tbID.ReadOnly = false;
+                tbID.Enabled = true;
+            }
+            else
+            {
+                tbID.ReadOnly = true;
+                tbID.Enabled = true;
+            }
         }
 
         private void saveBtnStyling()
@@ -143,7 +161,6 @@ namespace BloodLink.Forms
             cbBloodGroup.ValueMember = "BloodGroupValue";
             cbBloodGroup.SelectedIndex = 0;
 
-
             var gender = Enum.GetValues(typeof(Gender)).Cast<Gender>()
                 .Select(g => new
                 {
@@ -185,7 +202,6 @@ namespace BloodLink.Forms
 
         private void lblDonorFormHeading_Click(object sender, EventArgs e)
         {
-
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
@@ -195,6 +211,8 @@ namespace BloodLink.Forms
 
         private void btnSave_Click(object sender, EventArgs e)
         {
+            var currentEligibility = cbEligibility.SelectedValue as DonorEligibility? ?? DonorEligibility.Eligible;
+
             if (_mode == FormMode.Add)
             {
                 Donor donor = new Donor
@@ -202,12 +220,12 @@ namespace BloodLink.Forms
                     FullName = tbFullName.Text,
                     Phone = tbPhone.Text,
                     Age = (int)nudAge.Value,
-                    BloodGroup = cbBloodGroup.SelectedValue as BloodGroup?, 
+                    BloodGroup = cbBloodGroup.SelectedValue as BloodGroup?,
                     Gender = cbGender.SelectedValue as Gender?,
                     Weight = nudWeight.Value == 0 ? null : (double)nudWeight.Value,
                     City = tbCity.Text,
                     Area = tbArea.Text ?? "",
-                    IsEligible = cbEligibility.SelectedValue as DonorEligibility? == DonorEligibility.Eligible,
+                    IsEligible = currentEligibility == DonorEligibility.Eligible,
                     LastDonationDate = dtpLastDonation.Value,
                     UserId = _currentUser.Id
                 };
@@ -218,13 +236,9 @@ namespace BloodLink.Forms
                     DialogResult = DialogResult.OK;
                     this.Close();
                 }
-                else
-                {
-                    MessageBox.Show("Failed to register donor. Please try again.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
             }
 
-            if(_mode == FormMode.View)
+            if (_mode == FormMode.View)
             {
                 this.Close();
             }
@@ -239,7 +253,7 @@ namespace BloodLink.Forms
                 _donor.Weight = nudWeight.Value == 0 ? null : (double)nudWeight.Value;
                 _donor.City = tbCity.Text;
                 _donor.Area = tbArea.Text ?? "";
-                _donor.IsEligible = cbEligibility.SelectedValue as DonorEligibility? == DonorEligibility.Eligible;
+                _donor.IsEligible = currentEligibility == DonorEligibility.Eligible;
                 _donor.LastDonationDate = dtpLastDonation.Value;
                 _donor.UserId = _currentUser.Id;
 
@@ -280,12 +294,12 @@ namespace BloodLink.Forms
             if (_mode == FormMode.View)
             {
                 lblDonorFormHeading.Text = "View Donor";
-                makeReadonly(false);
+                makeReadonly(true);
                 btnCancel.Visible = false;
                 btnSave.Text = "Close";
             }
 
-            if(_mode == FormMode.Edit)
+            if (_mode == FormMode.Edit)
             {
                 lblDonorFormHeading.Text = "Updating Donor";
                 btnSave.Text = "Update";
@@ -294,16 +308,22 @@ namespace BloodLink.Forms
 
         private void makeReadonly(bool action)
         {
-            tbFullName.Enabled = action;
-            tbCity.Enabled = action;
-            tbPhone.Enabled = action;
-            nudAge.Enabled = action;
-            cbBloodGroup.Enabled = action;
-            cbEligibility.Enabled = action;
-            cbGender.Enabled = action;
-            nudWeight.Enabled = action;
-            tbArea.Enabled = action;
-            dtpLastDonation.Enabled = action;
+            tbID.ReadOnly = action;
+            tbID.Enabled = true;
+
+            tbFullName.ReadOnly = action;
+            tbCity.ReadOnly = action;
+            tbPhone.ReadOnly = action;
+            tbArea.ReadOnly = action;
+
+            nudAge.Enabled = !action;
+            nudWeight.Enabled = !action;
+
+            cbBloodGroup.Enabled = !action;
+            cbEligibility.Enabled = !action;
+            cbGender.Enabled = !action;
+
+            dtpLastDonation.Enabled = !action;
         }
     }
 }

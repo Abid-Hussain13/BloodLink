@@ -7,6 +7,14 @@ namespace BloodLink.Helpers
 {
     public class PaintHelper
     {
+        public string GetInitials(string fullName)
+        {
+            if (string.IsNullOrWhiteSpace(fullName)) return "?";
+            var parts = fullName.Trim().Split(' ');
+            return parts.Length == 1
+                ? parts[0][0].ToString().ToUpper()
+                : $"{parts[0][0]}{parts[^1][0]}".ToUpper();
+        }
 
         //give linne gdv after 
         public static void DgvHeaderLine_Paint(object? sender, PaintEventArgs e)

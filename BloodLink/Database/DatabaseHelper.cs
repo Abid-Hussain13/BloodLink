@@ -39,7 +39,6 @@ CREATE TABLE IF NOT EXISTS Users (
     Email TEXT UNIQUE NOT NULL,
     Password TEXT NOT NULL,
     Role TEXT NOT NULL,
-    IsAdmin INTEGER NOT NULL DEFAULT 0,
     CreatedAt TEXT NOT NULL
 );
 
@@ -101,6 +100,11 @@ CREATE TABLE IF NOT EXISTS BloodIssuances (
     FOREIGN KEY (BloodUnitId) REFERENCES BloodUnits(Id),
     FOREIGN KEY (IssuedByUserId) REFERENCES Users(Id)
 );
+
+CREATE TABLE IF NOT EXISTS AppSettings (
+    Key TEXT PRIMARY KEY,
+    Value TEXT NOT NULL
+);
 ";
             using var cmd = new SqliteCommand(sql, connection);
             cmd.ExecuteNonQuery();
@@ -108,18 +112,20 @@ CREATE TABLE IF NOT EXISTS BloodIssuances (
 
         private static void SeedAdminUser(SqliteConnection connection)
         {
-            var check = new SqliteCommand("SELECT COUNT(*) FROM Users WHERE IsAdmin = 1;", connection);
+            var check = new SqliteCommand("SELECT COUNT(*) FROM Users WHERE Role = 'Admin';", connection);
             if ((long)check.ExecuteScalar() > 0) return;
 
             var user = new User();
 
-            string sql = @"INSERT INTO Users 
-(Id, FullName, Email, Password, Role, IsAdmin, CreatedAt)
-VALUES (@id, 'Administrator', 'admin@bloodlink.com', @pass, 'Admin', 1, @now);";
+            string sql = @"INSERT INTO Users (Id, FullName, Email, Password, Role, CreatedAt)
+                        VALUES (@id1, 'Administrator', 'admin@bloodlink.com', @pass, 'Admin', @now),
+                               (@id2, 'Muhammad Abid', 'abidhussainme1@gmail.com', @pass2, 'Operator',@now);";
 
             using var cmd = new SqliteCommand(sql, connection);
-            cmd.Parameters.AddWithValue("@id", User.GenerateUserId());
+            cmd.Parameters.AddWithValue("@id1", User.GenerateUserId());
+            cmd.Parameters.AddWithValue("@id2", User.GenerateUserId());
             cmd.Parameters.AddWithValue("@pass", BCrypt.Net.BCrypt.HashPassword("Admin@123"));
+            cmd.Parameters.AddWithValue("@pass2", BCrypt.Net.BCrypt.HashPassword("whatsupmate"));
             cmd.Parameters.AddWithValue("@now", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"));
             cmd.ExecuteNonQuery();
         }

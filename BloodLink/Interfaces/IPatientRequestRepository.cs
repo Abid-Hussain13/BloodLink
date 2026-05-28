@@ -14,6 +14,7 @@ namespace BloodLink.Interfaces
         public List<PatientRequest> SearchPatientRequests(string searchItem, BloodGroup? bg, RequestStatus? rs);
         public int GetAllPatientInDay();
         public List<PatientModel> getRecentPatientRequests();
+        public int GetPatientsPendingToday();
         public Dictionary<string, int> GetRequestStatusStats();
     }
 }

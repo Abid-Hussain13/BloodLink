@@ -11,5 +11,6 @@ namespace BloodLink.Models
             public int unitsRequired { get; set; }
             public string doctorName { get; set; }
             public RequestStatus status { get; set; }
+            public DateTime CreatedAt { get; set; }
     }
 }

@@ -11,8 +11,7 @@ namespace BloodLink.Models
         public string FullName { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
-        public Role Role { get; set; }
-        public bool IsAdmin { get; set; } = false;
+        public Role? Role { get; set; }
         public DateTime CreatedAt { get; set; }
 
         public static string GenerateUserId()

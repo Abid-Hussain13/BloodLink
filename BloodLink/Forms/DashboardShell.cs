@@ -1,9 +1,10 @@
-﻿using BloodLink.Helpers;
+﻿using BloodLink.Database;
+using BloodLink.Helpers;
 using BloodLink.Models;
-using System.Drawing;
-using System.Drawing.Drawing2D;
 using BloodLink.Pages;
 using BloodLink.Services;
+using System.Drawing;
+using System.Drawing.Drawing2D;
 using Timer =  System.Windows.Forms.Timer;
 
 namespace BloodLink.Forms
@@ -11,24 +12,29 @@ namespace BloodLink.Forms
     public partial class DashboardShell : Form
     {
         private readonly BloodUnitService _unitService = new BloodUnitService();
+        private readonly LoginForm _loginForm;
         private readonly User _currentUser;
         private Button _activeNavButton;
+        private System.Windows.Forms.Timer _sessionTimer;
+        private DateTime _lastActivityTime = DateTime.Now;
         private List<(string icon, string label, Action onClick)> _navItems;
 
         private Label _pageTitle;
         private Panel _themeTogglePanel;
         private bool _isAnimating = false;
 
-        public DashboardShell(User user)
+        public DashboardShell(User user, LoginForm form)
         {
             InitializeComponent();
             _currentUser = user;
+            _loginForm = form;
             ApplyTheme();
             BuildNavItems();
             BuildSidebarContent();
             BuildHeaderContent();
             LoadDefaultPage();
             CheckAndExpireUnits();
+            LoadSavedSettings();
         }
         private void ApplyTheme()
         {
@@ -43,7 +49,7 @@ namespace BloodLink.Forms
         // ─────────────────────────────────────────────────
         private void BuildNavItems()
         {
-            if (_currentUser.IsAdmin)
+            if (_currentUser.Role == Role.Admin)
             {
                 _navItems = new List<(string, string, Action)>
         {
@@ -275,7 +281,7 @@ namespace BloodLink.Forms
 
             var lblRole = new Label
             {
-                Text = _currentUser.IsAdmin ? "Administrator"
+                Text = _currentUser.Role == Role.Admin ? "Administrator"
                                             : _currentUser.Role.ToString(),
                 Font = new Font("Segoe UI", 8),
                 ForeColor = AppTheme.MutedText,
@@ -436,7 +442,7 @@ namespace BloodLink.Forms
 
             var lblRole = new Label
             {
-                Text = _currentUser.IsAdmin ? "Administrator"
+                Text = _currentUser.Role == Role.Admin ? "Administrator"
                                             : _currentUser.Role.ToString(),
                 Font = new Font("Segoe UI", 8),
                 ForeColor = AppTheme.MutedText,
@@ -531,16 +537,22 @@ namespace BloodLink.Forms
                 return;
             }
 
-            var placeholder = new Label
+            if(pageName == "Staff")
             {
-                Text = $"{_pageTitle?.Text} page coming soon...",
-                Font = AppTheme.FontH2,
-                ForeColor = AppTheme.MutedText,
-                BackColor = Color.Transparent,
-                AutoSize = true,
-                Location = new Point(24, 24)
-            };
-            pnlContent.Controls.Add(placeholder);
+                AuthService _authService = new AuthService();
+                var page = new StaffPage(_authService, _currentUser);
+                page.Dock = DockStyle.Fill;
+                pnlContent.Controls.Add(page);
+                return;
+            }
+            if (pageName == "Settings")
+            {
+                var page = new SettingPage(this);
+                page.Dock = DockStyle.Fill;
+                pnlContent.Controls.Add(page);
+                return;
+            }
+
         }
 
         private void LoadDefaultPage() => LoadPage("Dashboard");
@@ -584,7 +596,6 @@ namespace BloodLink.Forms
                 }
                 else
                 {
-                    // Redraw indicator at new position mid-animation
                     _themeTogglePanel?.Invalidate();
                 }
             };
@@ -603,19 +614,26 @@ namespace BloodLink.Forms
 
             if (confirm == DialogResult.Yes)
             {
-                this.Hide();
-                var loginForm = new LoginForm();
-                loginForm.Show();
+                 _loginForm.ResetFields();
+
+                _loginForm.Show();
+
+                this.Dispose(); 
                 this.Close();
             }
         }
 
-        // ─────────────────────────────────────────────────
-        // DRAWING HELPERS
-        // ─────────────────────────────────────────────────
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            base.OnFormClosed(e);
 
-        // Draws a rounded rectangle — used for nav buttons,
-        // user card, theme toggle pill
+            // If the user closed the form by clicking the 'X' button or via Alt+F4, 
+            // shut down the entire application pool.
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                Application.Exit();
+            }
+        }
         private void FillRoundedRect(Graphics g, Brush brush,
                                      Rectangle rect, int radius)
         {
@@ -662,6 +680,51 @@ namespace BloodLink.Forms
             expiryTimer.Interval = 60 * 60 * 1000;
             expiryTimer.Tick += (s, e) => _unitService.CheckAndExpireUnits();
             expiryTimer.Start();
+        }
+
+        private void LoadSavedSettings()
+        {
+            string? saved = AppSettingsRepository.GetSetting("SessionTimeout");
+            if (saved != null && Enum.TryParse<SessionTimeout>(saved, out var timeout))
+                ApplySessionTimeout(timeout);
+        }
+
+        public void ApplySessionTimeout(SessionTimeout timeout)
+        {
+            if (_sessionTimer != null)
+            {
+                _sessionTimer.Stop();
+                _sessionTimer.Dispose();
+                _sessionTimer = null;
+            }
+
+            if (timeout == SessionTimeout.Never) return;
+
+            int minutes = (int)timeout;
+
+            this.MouseMove += (s, e) => _lastActivityTime = DateTime.Now;
+            this.KeyDown += (s, e) => _lastActivityTime = DateTime.Now;
+            this.MouseClick += (s, e) => _lastActivityTime = DateTime.Now;
+
+            _sessionTimer = new System.Windows.Forms.Timer();
+            _sessionTimer.Interval = 30 * 1000;
+            _sessionTimer.Tick += (s, e) =>
+            {
+                double idleMinutes = (DateTime.Now - _lastActivityTime).TotalMinutes;
+                if (idleMinutes >= minutes)
+                {
+                    _sessionTimer.Stop();
+                    MessageBox.Show(
+                        "Your session has expired due to inactivity.",
+                        "Session Expired",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning
+                    );
+                    _loginForm.Show();
+                    this.Close();
+                }
+            };
+            _sessionTimer.Start();
         }
     }
 }

@@ -11,11 +11,6 @@ namespace BloodLink.Services
         {
             _userRepository = new UserRepository();
         }
-
-        // ─────────────────────────────────────────
-        // LOGIN
-        // Called by: LoginForm
-        // ─────────────────────────────────────────
         public (bool success, string message, User? user) Login(string email, string password)
         {
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
@@ -34,38 +29,32 @@ namespace BloodLink.Services
             return (true, "Login successful.", user);
         }
 
-        // ─────────────────────────────────────────
-        // CREATE OPERATOR
-        // Called by: StaffManagementPage (admin only)
-        // ─────────────────────────────────────────
-        public (bool success, string message) CreateOperator(string fullName, string email, string password, string confirmPassword)
+        public (bool success, string message) CreateOperator(User user)
         {
-            if (string.IsNullOrWhiteSpace(fullName) ||
-                string.IsNullOrWhiteSpace(email) ||
-                string.IsNullOrWhiteSpace(password))
+            if (string.IsNullOrWhiteSpace(user.FullName) ||
+                string.IsNullOrWhiteSpace(user.Email) ||
+                string.IsNullOrWhiteSpace(user.Password))
                 return (false, "All fields are required.");
 
-            if (!IsValidEmail(email))
+            if (!IsValidEmail(user.Email))
                 return (false, "Please enter a valid email address.");
 
-            if (password != confirmPassword)
-                return (false, "Passwords do not match.");
-
-            if (password.Length < 6)
+            if (user.Password.Length < 6)
                 return (false, "Password must be at least 6 characters.");
 
-            if (_userRepository.EmailExists(email.Trim().ToLower()))
+            if (_userRepository.EmailExists(user.Email.Trim().ToLower()))
                 return (false, "An account with this email already exists.");
 
-            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
+
+            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(user.Password);
 
             User newUser = new User
             {
-                FullName = fullName.Trim(),
-                Email = email.Trim().ToLower(),
+                Id = User.GenerateUserId(),
+                FullName = user.FullName.Trim(),
+                Email = user.Email.Trim().ToLower(),
                 Password = hashedPassword,
-                Role = Role.Operator,
-                IsAdmin = false,
+                Role = user.Role,
                 CreatedAt = DateTime.Now
             };
 
@@ -77,17 +66,70 @@ namespace BloodLink.Services
             return (true, "Operator account created successfully.");
         }
 
-        private bool IsValidEmail(string email)
+        public (bool Success, string Message) UpdateUser(User user, string plainTextPassword = "")
         {
             try
             {
-                var addr = new System.Net.Mail.MailAddress(email);
-                return addr.Address == email.Trim().ToLower();
+                if (string.IsNullOrWhiteSpace(user.FullName))
+                {
+                    return (false, "Full Name cannot be left empty.");
+                }
+
+                if (!IsValidEmail(user.Email))
+                    return (false, "Please enter a valid email address.");
+
+                if (user.Role == null)
+                {
+                    return (false, "Please select a valid role for the user.");
+                }
+
+                if (!string.IsNullOrWhiteSpace(plainTextPassword))
+                {
+                    if (plainTextPassword.Length < 6)
+                    {
+                        return (false, "Password must be at least 6 characters long.");
+                    }
+                    user.Password = BCrypt.Net.BCrypt.HashPassword(plainTextPassword);
+                }
+                else
+                {
+                    string existingHash = _userRepository.GetPasswordHashById(user.Id);
+                    if (string.IsNullOrEmpty(existingHash))
+                    {
+                        return (false, "User record was not found in the database.");
+                    }
+                    user.Password = existingHash;
+                }
+
+                bool result = _userRepository.UpdateUser(user);
+
+                if (result)
+                    return (true, "User updated successfully.");
+                else
+                    return (false, "Failed to update the database record.");
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                Console.WriteLine($"Error updating user: {ex.Message}");
+                return (false, $"An unexpected error occurred: {ex.Message}");
             }
+        }
+
+        private bool IsValidEmail(string email)
+        {
+            return new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(email);
+        }
+
+        public List<User> GetAllUsers()
+        {
+            return _userRepository.GetAllUsers();
+        }
+
+        public int DeleteUser(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return 0;
+
+            return _userRepository.DeleteUser(id);
         }
     }
 }

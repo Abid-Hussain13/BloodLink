@@ -27,16 +27,16 @@ namespace BloodLink.Services
             if (string.IsNullOrWhiteSpace(request.PatientName))
                 return (-1, "Patient Name Field is required");
 
-            if (request.PatientAge.HasValue && (request.PatientAge < 18 || request.PatientAge > 65))
-                return (-1, "Patient Age must be between 18 to 65");
+            if (request.PatientAge.HasValue && request.PatientAge > 100)
+                return (-1, "Valid Patient Age is required.");
 
-            if (!Enum.IsDefined(typeof(BloodGroup), request.BloodGroup))
+            if(request.BloodGroup == default(BloodGroup))
                 return (-1, "Please Select Valid Blood Group");
 
             if (request.UnitsRequired <= 0)
                 return (-1, "Units Required must be greater than 0");
 
-            if (!Enum.IsDefined(typeof(RequestStatus), request.Status))
+            if (request.Status == default(RequestStatus))
                 return (-1, "Please Select Valid Request Status");
 
             request.Id = PatientRequest.generatePatientRequestId();
@@ -53,27 +53,23 @@ namespace BloodLink.Services
             if (request == null)
                 return (-1, "Request is not received");
 
-            if (string.IsNullOrWhiteSpace(request.Id))
-                return (-1, "Request ID is required for an update");
-
             if (string.IsNullOrWhiteSpace(request.userId))
                 return (-1, "User ID is required");
 
             if (string.IsNullOrWhiteSpace(request.PatientName))
                 return (-1, "Patient Name Field is required");
 
-            if (request.PatientAge.HasValue && (request.PatientAge < 18 || request.PatientAge > 65))
-                return (-1, "Patient Age must be between 18 to 65");
+            if (request.PatientAge.HasValue && request.PatientAge > 100)
+                return (-1, "Valid Patient Age is required.");
 
-            if (!Enum.IsDefined(typeof(BloodGroup), request.BloodGroup))
+            if (request.BloodGroup == default(BloodGroup))
                 return (-1, "Please Select Valid Blood Group");
 
             if (request.UnitsRequired <= 0)
                 return (-1, "Units Required must be greater than 0");
 
-            if (!Enum.IsDefined(typeof(RequestStatus), request.Status))
+            if (request.Status == default(RequestStatus))
                 return (-1, "Please Select Valid Request Status");
-
             try
             {
                 int result = _patientRequestRepository.UpdateRequest(request);
@@ -112,6 +108,11 @@ namespace BloodLink.Services
         public int GetAllPatientInDay()
         {
             return _patientRequestRepository.GetAllPatientInDay();
+        }
+
+        public int GetPatientsPendingToday()
+        {
+            return _patientRequestRepository.GetPatientsPendingToday();
         }
 
         public List<PatientModel> GetRecentPatientRequests()

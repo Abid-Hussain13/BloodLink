@@ -82,12 +82,14 @@ namespace BloodLink.Pages
         private void loadData()
         {
             BloodUnitStats issuedUnits = _bloodUnitService.GetBloodUnitStats();
+            int totalUnits = _bloodUnitService.CollectionThisMonth();
 
+            lblUnitsColledtedCount.Text = totalUnits.ToString();
             int unitsIssued = issuedUnits.UsedUnits;
             lblUnitsIssuedCount.Text = unitsIssued.ToString();
-
+            
             int unitsExpired = issuedUnits.ExpiredUnits;
-            lblUnitsExpiredCount.Text = unitsIssued.ToString();
+            lblUnitsExpiredCount.Text = unitsExpired.ToString();
         }
 
         private void LoadStockData()
@@ -280,9 +282,8 @@ namespace BloodLink.Pages
             int fulfilled = stats.ContainsKey("Fulfilled") ? stats["Fulfilled"] : 0;
             int pending = stats.ContainsKey("Pending") ? stats["Pending"] : 0;
             int cancelled = stats.ContainsKey("Cancelled") ? stats["Cancelled"] : 0;
-            int total = fulfilled + pending + cancelled;
+            //int total = fulfilled + pending + cancelled;
 
-            lblUnitsColledtedCount.Text = total.ToString();
 
             lblFulfilledCount.Text = fulfilled.ToString();
             lblPendingCount.Text = pending.ToString();
@@ -331,7 +332,6 @@ namespace BloodLink.Pages
 
             var totalLabel = new Label
             {
-                Text = total.ToString(),
                 ForeColor = AppTheme.PrimaryText,
                 Font = AppTheme.FontHeader,
                 BackColor = Color.Transparent,

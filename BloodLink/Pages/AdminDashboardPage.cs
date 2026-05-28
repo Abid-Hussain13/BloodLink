@@ -11,11 +11,22 @@ namespace BloodLink.Pages
 {
     public partial class AdminDashboardPage : UserControl
     {
+        private readonly DonorService _donorService = new DonorService();
+        private readonly PaintHelper _paintHelper = new PaintHelper();
+        private bool _allowSelection = false;
         public AdminDashboardPage()
         {
             InitializeComponent();
             ApplyTheme();
             loadData();
+
+            this.HandleCreated += AdminDashboardPage_HandleCreated;
+            dgvExpiringUnits.SelectionChanged += (s, e) => {
+                if (!_allowSelection) dgvExpiringUnits.ClearSelection();
+            };
+            dgvPatientRequests.SelectionChanged += (s, e) => {
+                if (!_allowSelection) dgvPatientRequests.ClearSelection();
+            };
         }
 
         private void ApplyTheme()
@@ -50,7 +61,7 @@ namespace BloodLink.Pages
             tblBloodBreakdown.BackColor = AppTheme.ContentBackground;
             lblBloodBreakdown.ForeColor = AppTheme.PrimaryText;
             lblBloodBreakdown.Font = AppTheme.FontButton;
-            AddRounding(pnlBloodBreakdown);
+            _paintHelper.AddRounding(pnlBloodBreakdown);
 
             StyleBloodChips();
 
@@ -58,7 +69,7 @@ namespace BloodLink.Pages
             panel1.BorderStyle = BorderStyle.None;
             lblExpiringUnits.ForeColor = AppTheme.PrimaryText;
             lblExpiringUnits.Font = AppTheme.FontButton;
-            AddRounding(panel1);
+            _paintHelper.AddRounding(panel1);
 
             dgvExpiringUnits.BackgroundColor = AppTheme.ContentBackground;
             dgvExpiringUnits.GridColor = AppTheme.CardBackground;
@@ -73,7 +84,7 @@ namespace BloodLink.Pages
             pnlPatientRequests.BackColor = AppTheme.ContentBackground;
             lblPatientRequests.ForeColor = AppTheme.PrimaryText;
             lblPatientRequests.Font = AppTheme.FontButton;
-            AddRounding(pnlPatientRequests);
+            _paintHelper.AddRounding(pnlPatientRequests);
 
             dgvPatientRequests.BackgroundColor = AppTheme.ContentBackground;
             dgvPatientRequests.GridColor = AppTheme.CardBackground;
@@ -88,8 +99,10 @@ namespace BloodLink.Pages
             dgvPatientRequests.DefaultCellStyle.SelectionForeColor = AppTheme.PrimaryText;
             dgvPatientRequests.CurrentCell = null;
             dgvPatientRequests.ClearSelection();
-            dgvPatientRequests.Paint -= DgvHeaderLine_Paint;
-            dgvPatientRequests.Paint += DgvHeaderLine_Paint;
+            dgvPatientRequests.Paint -= PaintHelper.DgvHeaderLine_Paint;
+            dgvPatientRequests.Paint += PaintHelper.DgvHeaderLine_Paint;
+            _paintHelper.AddClickEventToAllControls(this, dgvExpiringUnits);
+            _paintHelper.AddClickEventToAllControls(this, dgvPatientRequests);
         }
 
         private void StyleStatCard(
@@ -106,7 +119,7 @@ namespace BloodLink.Pages
             count.Font = new Font("Segoe UI", 18, FontStyle.Bold);
             info.ForeColor = AppTheme.MutedText;
             info.Font = AppTheme.FontSmall;
-            AddRounding(panel);
+            _paintHelper.AddRounding(panel);
         }
 
         private void StyleBloodChips()
@@ -156,6 +169,8 @@ namespace BloodLink.Pages
             var donorService = new DonorService();
             DonorStats stats = donorService.GetDashboardStats();
             lblTotalDonorCount.Text = stats != null ? stats.TotalDonors.ToString() : "0";
+            string donorThisMonth = _donorService.DonorsThisMonth().ToString();
+            lblTotalDonorInfo.Text = $"+{donorThisMonth} this month";
 
             var bloodUnitService = new BloodUnitService();
             var bloodUnitStats = bloodUnitService.GetBloodUnitStats();
@@ -164,10 +179,13 @@ namespace BloodLink.Pages
             var patientRequestService = new PatientRequestService();
             int totalPatientToday = patientRequestService.GetAllPatientInDay();
             lblPatientTodayCount.Text = totalPatientToday.ToString() ?? "0";
-            lblExpiringSoonCount.Text = "5";
+            int patientsPendingToday = patientRequestService.GetPatientsPendingToday();
+            lblPatientTodayInfo.Text = $"{patientsPendingToday} in Pending";
 
             int expiringSoonCount = bloodUnitService.getExpiringSoonCount();
             lblExpiringSoonCount.Text = expiringSoonCount.ToString() ?? "0";
+            string withInDays = AppSettingsRepository.GetSetting("ExpiryThreshold");
+            lblExpiringSoonInfo.Text = $"within {withInDays} days";
 
             int APlusCount = bloodUnitService.getBloodGroupCount(BloodGroup.APositive);
             lblAPlusCount.Text = APlusCount.ToString() ?? "0";
@@ -193,37 +211,54 @@ namespace BloodLink.Pages
                 dgvExpiringUnits.Rows.Add(expiryUnit.Key, $"{expiryUnit.Value} days");
             }
 
-
-
             dgvPatientRequests.Rows.Clear();
             var patientRequests = patientRequestService.GetRecentPatientRequests();
-            foreach(var request in patientRequests)
+            foreach (var request in patientRequests)
             {
-                dgvPatientRequests.Rows.Add(
+                int rowIndex = dgvPatientRequests.Rows.Add(
                     request.patientName,
                     request.group.ToString(),
                     request.unitsRequired.ToString(),
-                    request.doctorName,
+                    string.IsNullOrWhiteSpace(request.doctorName) ? "N/A" : request.doctorName,
                     request.status.ToString()
                 );
+                dgvPatientRequests.Rows[rowIndex].Tag = request;  
             }
 
-            dgvPatientRequests.Rows.Add("Ahmed Raza", "O+", "2", "Dr. Khan", "Pending");
-            dgvPatientRequests.Rows.Add("Fatima Malik", "A+", "1", "Dr. Ali", "Fulfilled");
-            dgvPatientRequests.Rows.Add("Usman Ali", "B-", "3", "Dr. Sana", "Pending");
-            dgvPatientRequests.Rows.Add("Sara Khan", "AB+", "1", "Dr. Tariq", "Fulfilled");
-            dgvPatientRequests.Rows.Add("Irfan Shah", "O-", "2", "Dr. Malik", "Cancelled");
+            dgvPatientRequests.CellFormatting += (s, e) =>
+            {
+                if (e.RowIndex < 0) return;
+                var row = dgvPatientRequests.Rows[e.RowIndex];
+                string status = row.Cells["colStatus"].Value?.ToString();
+                bool isOldPending = status == "Pending" &&
+                                    row.Tag is PatientModel m &&
+                                    m.CreatedAt.Date < DateTime.Today;
+
+                if (isOldPending)
+                {
+                    e.CellStyle.BackColor = AppTheme.OldPatientRecords;
+                }
+            };
+
+            dgvExpiringUnits.CurrentCell = null;
+            dgvExpiringUnits.ClearSelection();
+
+            dgvPatientRequests.CurrentCell = null;
+            dgvPatientRequests.ClearSelection();
         }
 
-        // ─────────────────────────────────────────────────
-        // PAINT HELPERS
-        // ─────────────────────────────────────────────────
-        public void AddRounding(Panel panel)
+        private void AdminDashboardPage_HandleCreated(object sender, EventArgs e)
         {
-            panel.Paint -= PnlRounding_Paint;
-            panel.Paint += PnlRounding_Paint;
-            panel.Resize -= PnlResize;
-            panel.Resize += PnlResize;
+            this.BeginInvoke(new Action(() =>
+            {
+                dgvExpiringUnits.ClearSelection();
+                dgvExpiringUnits.CurrentCell = null;
+
+                dgvPatientRequests.ClearSelection();
+                dgvPatientRequests.CurrentCell = null;
+
+                _allowSelection = true;
+            }));
         }
 
         private void AddRoundingNoBorder(Panel panel)
@@ -239,40 +274,6 @@ namespace BloodLink.Pages
             ((Panel)sender).Invalidate();
         }
 
-        private void DgvHeaderLine_Paint(object? sender, PaintEventArgs e)
-        {
-            if (sender is DataGridView dgv)
-            {
-                int y = dgv.ColumnHeadersHeight - 1;
-                using var pen = new Pen(Color.FromArgb(160, AppTheme.BorderColor), 2f);
-                e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
-                e.Graphics.DrawLine(pen, new Point(0, y), new Point(dgv.ClientSize.Width, y));
-            }
-        }
-
-        public void PnlRounding_Paint(object sender, PaintEventArgs e)
-        {
-            Panel pnl = (Panel)sender;
-            if (pnl.Width <= 0 || pnl.Height <= 0) return;
-
-            Graphics g = e.Graphics;
-            g.SmoothingMode = SmoothingMode.AntiAlias;
-
-            Rectangle rect = new Rectangle(0, 0, pnl.Width, pnl.Height);
-            using GraphicsPath path = GetRoundedPath(rect, 12);
-
-            pnl.Region = new Region(path);
-
-            using SolidBrush bg = new SolidBrush(pnl.BackColor);
-            g.FillPath(bg, path);
-
-            Rectangle borderRect = new Rectangle(0, 0, pnl.Width - 1, pnl.Height - 1);
-            using GraphicsPath borderPath = GetRoundedPath(borderRect, 12);
-            using Pen borderPen = new Pen(AppTheme.BorderColor, 1);
-            g.DrawPath(borderPen, borderPath);
-        }
-
-        // paint rounded background without border (for small chips)
         private void PnlRoundingNoBorder_Paint(object sender, PaintEventArgs e)
         {
             Panel pnl = (Panel)sender;
@@ -296,10 +297,8 @@ namespace BloodLink.Pages
             Graphics g = e.Graphics;
             g.SmoothingMode = SmoothingMode.AntiAlias;
 
-            // badge is a small pill/circle centered at the top of the label
             int w = lbl.Width + 5;
             int h = lbl.Height + 5;
-            // draw small circular badge centered near top
             int badgeSize = Math.Min(28, Math.Min(w - 8, h - 8));
             int bx = (w - badgeSize) / 2;
             int by = 6;
@@ -307,7 +306,6 @@ namespace BloodLink.Pages
             using GraphicsPath badgePath = new GraphicsPath();
             badgePath.AddEllipse(badgeRect);
 
-            // retrieve stored text and badge background color from Tag
             string text;
             Color badgeColor;
             if (lbl.Tag is ValueTuple<string, Color> vt)
@@ -346,5 +344,25 @@ namespace BloodLink.Pages
         private void lblTotalDonor_Click(object sender, EventArgs e) { }
         private void lblPatientTodayCount_Click(object sender, EventArgs e) { }
         private void lblPatientTodayInfo_Click(object sender, EventArgs e) { }
+
+        private void pnlBloodBreakdown_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void dgvPatientRequests_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (e.ColumnIndex == dgvPatientRequests.Columns["colStatus"]?.Index && e.Value != null)
+            {
+                string value = e.Value.ToString()!;
+                e.CellStyle.ForeColor = value switch
+                {
+                    "Pending" => Color.Orange,
+                    "Fulfilled" => Color.ForestGreen,
+                    "Cancelled" => Color.Red,
+                    _ => AppTheme.BodyText
+                };
+            }
+        }
     }
 }

@@ -129,8 +129,8 @@ namespace BloodLink.Pages
                 r.PatientName,
                 BloodGroup = EnumHelper.GetDescription(r.BloodGroup),
                 r.UnitsRequired,
-                r.DoctorName,
-                r.Ward,
+                DoctorName = string.IsNullOrWhiteSpace(r.DoctorName) ? "N/A" : r.DoctorName,
+                Ward = string.IsNullOrWhiteSpace(r.Ward) ? "N/A" : r.Ward,
                 Status = r.Status.ToString(),
             }).ToList();
 
@@ -258,11 +258,7 @@ namespace BloodLink.Pages
 
             var form = new PatientForm(_service, _currentUser, FormMode.Edit, selectedRequest);
             var result = form.ShowDialog();
-            if (result == DialogResult.OK)
-            {
-                loadData();
-                MessageBox.Show("Patient request updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
+            if (result == DialogResult.OK) ApplyFilters();
         }
 
         private void btnViewRequest_Click(object sender, EventArgs e)

@@ -168,6 +168,7 @@
             dgvBloodUnits.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvBloodUnits.Size = new Size(817, 247);
             dgvBloodUnits.TabIndex = 8;
+            dgvBloodUnits.CellFormatting += dgvBloodUnits_CellFormatting;
             // 
             // buBagId
             // 

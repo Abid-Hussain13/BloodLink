@@ -16,6 +16,7 @@ namespace BloodLink.Helpers
         public static Color SidebarBackground => IsDarkMode ? Color.FromArgb(13, 3, 2) : Color.FromArgb(26, 8, 5);
         public static Color MainBackground => IsDarkMode ? Color.FromArgb(26, 10, 8) : Color.FromArgb(250, 250, 250);
         public static Color ContentBackground => IsDarkMode ? Color.FromArgb(40, 9, 5) : Color.FromArgb(237,235,235);
+        public static Color OldPatientRecords => IsDarkMode ? Color.FromArgb(18, 4, 2) : Color.FromArgb(227, 220, 220);
         public static Color Background => IsDarkMode ? Color.FromArgb(13, 13, 13) : Color.FromArgb(250, 250, 250);
         public static Color CardBackground => IsDarkMode ? Color.FromArgb(26, 10, 8) : Color.FromArgb(255, 255, 255);
         public static Color Surface => IsDarkMode ? Color.FromArgb(40, 9, 5) : Color.FromArgb(245, 240, 239);

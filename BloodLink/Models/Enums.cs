@@ -57,4 +57,12 @@ namespace BloodLink.Models
         Edit, 
         View
     }
+    public enum SessionTimeout
+    {
+        [Description("15 Minutes")] FifteenMinutes = 15,
+        [Description("30 Minutes")] ThirtyMinutes = 30,
+        [Description("1 Hour")] OneHour = 60,
+        [Description("2 Hours")] TwoHours = 120,
+        [Description("Never")] Never = 0
+    }
 }

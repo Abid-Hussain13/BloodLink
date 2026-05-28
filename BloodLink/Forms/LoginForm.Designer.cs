@@ -26,152 +26,179 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.pnlLeft = new System.Windows.Forms.Panel();
-            this.lblLogo = new System.Windows.Forms.Label();
-            this.lblTagline = new System.Windows.Forms.Label();
-            this.pnlRight = new System.Windows.Forms.Panel();
-            this.lblWelcome = new System.Windows.Forms.Label();
-            this.lblSubtitle = new System.Windows.Forms.Label();
-            this.lblEmail = new System.Windows.Forms.Label();
-            this.txtEmail = new System.Windows.Forms.TextBox();
-            this.lblPassword = new System.Windows.Forms.Label();
-            this.txtPassword = new System.Windows.Forms.TextBox();
-            this.lblError = new System.Windows.Forms.Label();
-            this.btnLogin = new System.Windows.Forms.Button();
-            this.pnlLeft.SuspendLayout();
-            this.pnlRight.SuspendLayout();
-            this.SuspendLayout();
-
-            // ── pnlLeft ────────────────────────────────
-            this.pnlLeft.Location = new System.Drawing.Point(0, 0);
-            this.pnlLeft.Name = "pnlLeft";
-            this.pnlLeft.Size = new System.Drawing.Size(380, 560);
-            this.pnlLeft.TabIndex = 0;
-            this.pnlLeft.Controls.Add(this.lblLogo);
-            this.pnlLeft.Controls.Add(this.lblTagline);
-
-            // ── lblLogo ────────────────────────────────
-            this.lblLogo.AutoSize = true;
-            this.lblLogo.BackColor = System.Drawing.Color.Transparent;
-            this.lblLogo.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Bold);
-            this.lblLogo.ForeColor = System.Drawing.Color.White;
-            this.lblLogo.Location = new System.Drawing.Point(50, 180);
-            this.lblLogo.Name = "lblLogo";
-            this.lblLogo.Text = "🩸 BloodLink";
-
-            // ── lblTagline ─────────────────────────────
-            this.lblTagline.AutoSize = true;
-            this.lblTagline.BackColor = System.Drawing.Color.Transparent;
-            this.lblTagline.Font = new System.Drawing.Font("Segoe UI", 12F);
-            this.lblTagline.ForeColor = System.Drawing.Color.FromArgb(220, 180, 178);
-            this.lblTagline.Location = new System.Drawing.Point(50, 255);
-            this.lblTagline.Name = "lblTagline";
-            this.lblTagline.Text = "Every drop counts.\r\nBe someone\'s reason to live.";
-
-            // ── pnlRight ───────────────────────────────
-            this.pnlRight.Location = new System.Drawing.Point(380, 0);
-            this.pnlRight.Name = "pnlRight";
-            this.pnlRight.Size = new System.Drawing.Size(520, 560);
-            this.pnlRight.TabIndex = 1;
-            this.pnlRight.Controls.Add(this.lblWelcome);
-            this.pnlRight.Controls.Add(this.lblSubtitle);
-            this.pnlRight.Controls.Add(this.lblEmail);
-            this.pnlRight.Controls.Add(this.txtEmail);
-            this.pnlRight.Controls.Add(this.lblPassword);
-            this.pnlRight.Controls.Add(this.txtPassword);
-            this.pnlRight.Controls.Add(this.lblError);
-            this.pnlRight.Controls.Add(this.btnLogin);
-
-            // ── lblWelcome ─────────────────────────────
-            this.lblWelcome.AutoSize = true;
-            this.lblWelcome.BackColor = System.Drawing.Color.Transparent;
-            this.lblWelcome.Font = new System.Drawing.Font("Segoe UI", 22F, System.Drawing.FontStyle.Bold);
-            this.lblWelcome.Location = new System.Drawing.Point(60, 80);
-            this.lblWelcome.Name = "lblWelcome";
-            this.lblWelcome.Text = "Welcome back";
-
-            // ── lblSubtitle ────────────────────────────
-            this.lblSubtitle.AutoSize = true;
-            this.lblSubtitle.BackColor = System.Drawing.Color.Transparent;
-            this.lblSubtitle.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.lblSubtitle.Location = new System.Drawing.Point(60, 116);
-            this.lblSubtitle.Name = "lblSubtitle";
-            this.lblSubtitle.Text = "BloodLink Staff Portal";
-
-            // ── lblEmail ───────────────────────────────
-            this.lblEmail.AutoSize = true;
-            this.lblEmail.BackColor = System.Drawing.Color.Transparent;
-            this.lblEmail.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            this.lblEmail.Location = new System.Drawing.Point(60, 168);
-            this.lblEmail.Name = "lblEmail";
-            this.lblEmail.Text = "Email address";
-
-            // ── txtEmail ───────────────────────────────
-            this.txtEmail.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtEmail.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.txtEmail.Location = new System.Drawing.Point(60, 190);
-            this.txtEmail.Name = "txtEmail";
-            this.txtEmail.PlaceholderText = "Enter your email";
-            this.txtEmail.Size = new System.Drawing.Size(380, 40);
-            this.txtEmail.TabIndex = 0;
-
-            // ── lblPassword ────────────────────────────
-            this.lblPassword.AutoSize = true;
-            this.lblPassword.BackColor = System.Drawing.Color.Transparent;
-            this.lblPassword.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            this.lblPassword.Location = new System.Drawing.Point(60, 248);
-            this.lblPassword.Name = "lblPassword";
-            this.lblPassword.Text = "Password";
-
-            // ── txtPassword ────────────────────────────
-            this.txtPassword.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtPassword.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.txtPassword.Location = new System.Drawing.Point(60, 270);
-            this.txtPassword.Name = "txtPassword";
-            this.txtPassword.PasswordChar = '●';
-            this.txtPassword.PlaceholderText = "Enter your password";
-            this.txtPassword.Size = new System.Drawing.Size(380, 40);
-            this.txtPassword.TabIndex = 1;
-
-            // ── lblError ───────────────────────────────
-            this.lblError.AutoSize = true;
-            this.lblError.BackColor = System.Drawing.Color.Transparent;
-            this.lblError.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.lblError.ForeColor = System.Drawing.Color.FromArgb(192, 57, 43);
-            this.lblError.Location = new System.Drawing.Point(60, 322);
-            this.lblError.Name = "lblError";
-            this.lblError.Text = "";
-            this.lblError.Visible = false;
-
-            // ── btnLogin ───────────────────────────────
-            this.btnLogin.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.btnLogin.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnLogin.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
-            this.btnLogin.ForeColor = System.Drawing.Color.White;
-            this.btnLogin.Location = new System.Drawing.Point(60, 348);
-            this.btnLogin.Name = "btnLogin";
-            this.btnLogin.Size = new System.Drawing.Size(380, 45);
-            this.btnLogin.TabIndex = 2;
-            this.btnLogin.Text = "Login";
-            this.btnLogin.UseVisualStyleBackColor = false;
-            this.btnLogin.Click += new System.EventHandler(this.LoginButton_Click);
-
-            // ── LoginForm ──────────────────────────────
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(900, 560);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.MaximizeBox = false;
-            this.Name = "LoginForm";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "BloodLink — Login";
-            this.Controls.Add(this.pnlLeft);
-            this.Controls.Add(this.pnlRight);
-            this.pnlLeft.ResumeLayout(false);
-            this.pnlLeft.PerformLayout();
-            this.pnlRight.ResumeLayout(false);
-            this.pnlRight.PerformLayout();
-            this.ResumeLayout(false);
+            pnlLeft = new Panel();
+            lblLogo = new Label();
+            lblTagline = new Label();
+            pnlRight = new Panel();
+            lblWelcome = new Label();
+            lblSubtitle = new Label();
+            lblEmail = new Label();
+            txtEmail = new TextBox();
+            lblPassword = new Label();
+            txtPassword = new TextBox();
+            lblError = new Label();
+            btnLogin = new Button();
+            pnlLeft.SuspendLayout();
+            pnlRight.SuspendLayout();
+            SuspendLayout();
+            // 
+            // pnlLeft
+            // 
+            pnlLeft.Controls.Add(lblLogo);
+            pnlLeft.Controls.Add(lblTagline);
+            pnlLeft.Location = new Point(0, 0);
+            pnlLeft.Name = "pnlLeft";
+            pnlLeft.Size = new Size(380, 560);
+            pnlLeft.TabIndex = 0;
+            // 
+            // lblLogo
+            // 
+            lblLogo.AutoSize = true;
+            lblLogo.BackColor = Color.Transparent;
+            lblLogo.Font = new Font("Segoe UI", 24F, FontStyle.Bold);
+            lblLogo.ForeColor = Color.White;
+            lblLogo.Location = new Point(50, 180);
+            lblLogo.Name = "lblLogo";
+            lblLogo.Size = new Size(226, 45);
+            lblLogo.TabIndex = 0;
+            lblLogo.Text = "\U0001fa78 BloodLink";
+            // 
+            // lblTagline
+            // 
+            lblTagline.AutoSize = true;
+            lblTagline.BackColor = Color.Transparent;
+            lblTagline.Font = new Font("Segoe UI", 12F);
+            lblTagline.ForeColor = Color.FromArgb(220, 180, 178);
+            lblTagline.Location = new Point(50, 255);
+            lblTagline.Name = "lblTagline";
+            lblTagline.Size = new Size(206, 42);
+            lblTagline.TabIndex = 1;
+            lblTagline.Text = "Every drop counts.\r\nBe someone's reason to live.";
+            // 
+            // pnlRight
+            // 
+            pnlRight.Controls.Add(lblWelcome);
+            pnlRight.Controls.Add(lblSubtitle);
+            pnlRight.Controls.Add(lblEmail);
+            pnlRight.Controls.Add(txtEmail);
+            pnlRight.Controls.Add(lblPassword);
+            pnlRight.Controls.Add(txtPassword);
+            pnlRight.Controls.Add(lblError);
+            pnlRight.Controls.Add(btnLogin);
+            pnlRight.Location = new Point(380, 0);
+            pnlRight.Name = "pnlRight";
+            pnlRight.Size = new Size(520, 560);
+            pnlRight.TabIndex = 1;
+            // 
+            // lblWelcome
+            // 
+            lblWelcome.AutoSize = true;
+            lblWelcome.BackColor = Color.Transparent;
+            lblWelcome.Font = new Font("Segoe UI", 22F, FontStyle.Bold);
+            lblWelcome.Location = new Point(60, 80);
+            lblWelcome.Name = "lblWelcome";
+            lblWelcome.Size = new Size(221, 41);
+            lblWelcome.TabIndex = 0;
+            lblWelcome.Text = "Welcome back";
+            // 
+            // lblSubtitle
+            // 
+            lblSubtitle.AutoSize = true;
+            lblSubtitle.BackColor = Color.Transparent;
+            lblSubtitle.Font = new Font("Segoe UI", 9F);
+            lblSubtitle.Location = new Point(60, 121);
+            lblSubtitle.Name = "lblSubtitle";
+            lblSubtitle.Size = new Size(121, 15);
+            lblSubtitle.TabIndex = 1;
+            lblSubtitle.Text = "BloodLink Staff Portal";
+            lblSubtitle.Click += lblSubtitle_Click;
+            // 
+            // lblEmail
+            // 
+            lblEmail.AutoSize = true;
+            lblEmail.BackColor = Color.Transparent;
+            lblEmail.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            lblEmail.Location = new Point(60, 168);
+            lblEmail.Name = "lblEmail";
+            lblEmail.Size = new Size(81, 15);
+            lblEmail.TabIndex = 2;
+            lblEmail.Text = "Email address";
+            // 
+            // txtEmail
+            // 
+            txtEmail.BorderStyle = BorderStyle.FixedSingle;
+            txtEmail.Font = new Font("Segoe UI", 11F);
+            txtEmail.Location = new Point(60, 190);
+            txtEmail.Name = "txtEmail";
+            txtEmail.PlaceholderText = "Enter your email";
+            txtEmail.Size = new Size(380, 27);
+            txtEmail.TabIndex = 0;
+            // 
+            // lblPassword
+            // 
+            lblPassword.AutoSize = true;
+            lblPassword.BackColor = Color.Transparent;
+            lblPassword.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            lblPassword.Location = new Point(60, 248);
+            lblPassword.Name = "lblPassword";
+            lblPassword.Size = new Size(59, 15);
+            lblPassword.TabIndex = 3;
+            lblPassword.Text = "Password";
+            // 
+            // txtPassword
+            // 
+            txtPassword.BorderStyle = BorderStyle.FixedSingle;
+            txtPassword.Font = new Font("Segoe UI", 11F);
+            txtPassword.Location = new Point(60, 270);
+            txtPassword.Name = "txtPassword";
+            txtPassword.PasswordChar = '●';
+            txtPassword.PlaceholderText = "Enter your password";
+            txtPassword.Size = new Size(380, 27);
+            txtPassword.TabIndex = 1;
+            // 
+            // lblError
+            // 
+            lblError.AutoSize = true;
+            lblError.BackColor = Color.Transparent;
+            lblError.Font = new Font("Segoe UI", 9F);
+            lblError.ForeColor = Color.FromArgb(192, 57, 43);
+            lblError.Location = new Point(60, 322);
+            lblError.Name = "lblError";
+            lblError.Size = new Size(0, 15);
+            lblError.TabIndex = 4;
+            lblError.Visible = false;
+            // 
+            // btnLogin
+            // 
+            btnLogin.Cursor = Cursors.Hand;
+            btnLogin.FlatStyle = FlatStyle.Flat;
+            btnLogin.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            btnLogin.ForeColor = Color.White;
+            btnLogin.Location = new Point(60, 348);
+            btnLogin.Name = "btnLogin";
+            btnLogin.Size = new Size(380, 45);
+            btnLogin.TabIndex = 2;
+            btnLogin.Text = "Login";
+            btnLogin.UseVisualStyleBackColor = false;
+            btnLogin.Click += LoginButton_Click;
+            // 
+            // LoginForm
+            // 
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(900, 560);
+            Controls.Add(pnlLeft);
+            Controls.Add(pnlRight);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            MaximizeBox = false;
+            Name = "LoginForm";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "BloodLink — Login";
+            pnlLeft.ResumeLayout(false);
+            pnlLeft.PerformLayout();
+            pnlRight.ResumeLayout(false);
+            pnlRight.PerformLayout();
+            ResumeLayout(false);
         }
         #endregion
 

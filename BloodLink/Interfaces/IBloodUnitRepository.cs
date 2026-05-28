@@ -11,6 +11,7 @@ namespace BloodLink.Interfaces
         public int DeleteBloodUnit(string id);
         public List<BloodUnit> GetAllBloodUnits();
         public BloodUnitStats GetBloodUnitStats();
+        public int CollectionThisMonth();
         public List<BloodUnit> SearchBloodUnits(BloodGroup? bloodGroup, BloodUnitStatus? bloodUnitStatus);
         public int getBloodGroupCount(Enum BloodGroup);
         public int getExpiringSoonCount();

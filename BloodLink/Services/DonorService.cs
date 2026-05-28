@@ -31,6 +31,30 @@ namespace BloodLink.Services
                 return false;
             }
 
+            if(donor.Age == 0)
+            {
+                MessageBox.Show("Age is required");
+                return false;
+            }
+
+            if (donor.Age < 18 || donor.Age > 80)
+            {
+                MessageBox.Show("Valid Age is required");
+                return false;
+            }
+
+            if (donor.BloodGroup == null)
+            {
+                MessageBox.Show("Blood group is required");
+                return false;
+            }
+
+            if(donor.Gender == null)
+            {
+                MessageBox.Show("Gender is required");
+                return false;
+            }
+
             if (string.IsNullOrWhiteSpace(donor.City))
             {
                 MessageBox.Show("City is required.");
@@ -78,6 +102,30 @@ namespace BloodLink.Services
                 return false;
             }
 
+            if (donor.Age == 0)
+            {
+                MessageBox.Show("Age is required");
+                return false;
+            }
+
+            if (donor.Age < 18 || donor.Age > 80)
+            {
+                MessageBox.Show("Valid Age is required");
+                return false;
+            }
+
+            if (donor.BloodGroup == null)
+            {
+                MessageBox.Show("Blood group is required");
+                return false;
+            }
+
+            if (donor.Gender == null)
+            {
+                MessageBox.Show("Gender is required");
+                return false;
+            }
+
             if (string.IsNullOrWhiteSpace(donor.City))
             {
                 MessageBox.Show("City is required.");
@@ -118,7 +166,13 @@ namespace BloodLink.Services
             return success;
         }   
 
-
+        public int DonorsThisMonth()
+        {
+            int donorThisMonths = _donorRepo.DonorsThisMonth();
+            if (donorThisMonths <= 0)
+                return 0;
+            return donorThisMonths;
+        }
         public DonorStats GetDashboardStats()
         {
             return _donorRepo.GetDonorStats();

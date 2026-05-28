@@ -1016,6 +1016,7 @@
             dgvPatientRequests.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvPatientRequests.Size = new Size(783, 140);
             dgvPatientRequests.TabIndex = 1;
+            dgvPatientRequests.CellFormatting += dgvPatientRequests_CellFormatting;
             // 
             // colPatient
             // 

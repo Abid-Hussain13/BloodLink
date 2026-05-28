@@ -29,7 +29,7 @@ namespace BloodLink.Forms
             _currentUser = user;
             _mode = FormMode.Add;
 
-            this.Load += DonorForm_Load;
+            this.Load += BloodUnitForm_Load;
         }
 
         public BloodUnitForm(BloodUnitService bloodUnitService, User user, FormMode mode, BloodUnit bloodUnit)
@@ -42,10 +42,10 @@ namespace BloodLink.Forms
             _mode = mode;
             _bloodUnit = bloodUnit;
 
-            this.Load += DonorForm_Load;
+            this.Load += BloodUnitForm_Load;
         }
 
-        private void DonorForm_Load(object sender, EventArgs e)
+        private void BloodUnitForm_Load(object sender, EventArgs e)
         {
             ApplyTheme();
             populate_ComboBoxes();
@@ -143,11 +143,15 @@ namespace BloodLink.Forms
             tbID.Text = _bloodUnit.Id.ToString();
             cbBloodGroup.SelectedValue = _bloodUnit.BloodGroup;
             dtpCollectionDate.Value = _bloodUnit.CollectedDate;
-            cbLinkedDonor.SelectedValue = _bloodUnit.DonorId ?? "null";
             cbStatus.SelectedValue = _bloodUnit.Status;
             dtpExpiryDate.Value = _bloodUnit.ExpiryDate;
             tbUserId.Text = _bloodUnit.UserId.ToString();
             tbNotes.Text = _bloodUnit.Notes;
+
+            if (string.IsNullOrWhiteSpace(_bloodUnit.DonorId))
+                cbLinkedDonor.SelectedValue = "walk-in";
+            else
+                cbLinkedDonor.SelectedValue = _bloodUnit.DonorId;
 
             if (_mode == FormMode.View)
             {
@@ -237,7 +241,12 @@ namespace BloodLink.Forms
                 {
                     BloodGroup = bloodGroup,
                     CollectedDate = dtpCollectionDate.Value,
-                    DonorId = cbLinkedDonor.SelectedValue.ToString() == "null" ? null : cbLinkedDonor.SelectedValue.ToString(),
+                    DonorId = cbLinkedDonor.SelectedValue?.ToString() switch
+                    {
+                        "null" => null,
+                        "walk-in" => null,   // store as NULL, display handled in DGV
+                        _ => cbLinkedDonor.SelectedValue?.ToString()
+                    },
                     Status = status,
                     ExpiryDate = dtpExpiryDate.Value,
                     UserId = _currentUser.Id,
@@ -259,7 +268,12 @@ namespace BloodLink.Forms
 
                 _bloodUnit.BloodGroup = bloodGroup;
                 _bloodUnit.CollectedDate = dtpCollectionDate.Value;
-                _bloodUnit.DonorId = cbLinkedDonor.SelectedValue.ToString() == "null" ? null : cbLinkedDonor.SelectedValue.ToString();
+                _bloodUnit.DonorId = cbLinkedDonor.SelectedValue?.ToString() switch
+                {
+                    "null" => null,
+                    "walk-in" => null,   
+                    _ => cbLinkedDonor.SelectedValue?.ToString()
+                };
                 _bloodUnit.Status = status;
                 _bloodUnit.UserId = _currentUser.Id;
                 _bloodUnit.Notes = tbNotes.Text;

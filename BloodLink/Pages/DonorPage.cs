@@ -2,18 +2,17 @@
 using BloodLink.Helpers;
 using BloodLink.Models;
 using BloodLink.Services;
-using System.Drawing.Drawing2D;
-using System.Windows.Forms;
-using static System.Net.Mime.MediaTypeNames;
+using System.Globalization;
 
 namespace BloodLink.Pages
 {
     public partial class DonorPage : UserControl
     {
-
         private DonorService _DonorService;
         private readonly User _currentUser;
         private PaintHelper _paintHelper = new PaintHelper();
+        private bool _allowSelection = false;
+
         public DonorPage(DonorService _service, User user)
         {
             InitializeComponent();
@@ -85,7 +84,6 @@ namespace BloodLink.Pages
             dgvDonors.DefaultCellStyle.SelectionForeColor = AppTheme.PrimaryText;
             dgvDonors.Paint -= PaintHelper.DgvHeaderLine_Paint;
             dgvDonors.Paint += PaintHelper.DgvHeaderLine_Paint;
-
         }
 
         private void CbBloodGroups_DrawItem(object? sender, DrawItemEventArgs e)
@@ -106,8 +104,6 @@ namespace BloodLink.Pages
             }));
         }
 
-        private bool _allowSelection = false;
-
         private void dgvDonors_SelectionChanged(object sender, EventArgs e)
         {
             if (!_allowSelection)
@@ -122,21 +118,25 @@ namespace BloodLink.Pages
             }
         }
 
-
         private void loadData()
         {
-            dgvDonors.Rows.Insert(0, "");
-            dgvDonors.Rows[0].Height = 10;
-            dgvDonors.Rows[0].DefaultCellStyle.BackColor = AppTheme.ContentBackground;
-            dgvDonors.Rows[0].ReadOnly = true;
+            dgvDonors.Rows.Clear(); // Ensure rows clear accurately on reload
+            InsertSpacerRow();
+
+            var textInfo = CultureInfo.CurrentCulture.TextInfo;
             List<Donor> donors = _DonorService.GetAllDonors();
+
             foreach (Donor donor in donors)
             {
+                // Capitalizes the first letter of each word properly
+                string formattedName = !string.IsNullOrWhiteSpace(donor.FullName) ? textInfo.ToTitleCase(donor.FullName.ToLower()) : "";
+                string formattedCity = !string.IsNullOrWhiteSpace(donor.City) ? textInfo.ToTitleCase(donor.City.ToLower()) : "";
+
                 int rowIndex = dgvDonors.Rows.Add(
-                    donor.FullName,
+                    formattedName,
                     EnumHelper.GetDescription(donor.BloodGroup),
                     donor.Phone,
-                    donor.City,
+                    formattedCity,
                     donor.LastDonationDate.HasValue ? donor.LastDonationDate.Value.ToString("yyyy-MM-dd") : "N/A",
                     donor.IsEligible ? "Yes" : "No"
                 );
@@ -148,7 +148,6 @@ namespace BloodLink.Pages
             UpdateGridHeight();
             dgvDonors.Paint -= PaintHelper.DgvHeaderLine_Paint;
             dgvDonors.Paint += PaintHelper.DgvHeaderLine_Paint;
-            dgvDonors.RowsAdded += (s, e) => UpdateGridHeight();
 
             populateBloodGroups();
             populateStatus();
@@ -157,7 +156,6 @@ namespace BloodLink.Pages
 
         private void populateBloodGroups()
         {
-
             var groups = Enum.GetValues(typeof(BloodGroup))
                 .Cast<BloodGroup>()
                 .Select(bg => new
@@ -171,7 +169,6 @@ namespace BloodLink.Pages
             cbBloodGroups.DataSource = groups;
             cbBloodGroups.DisplayMember = "Text";
             cbBloodGroups.ValueMember = "Value";
-
             cbBloodGroups.SelectedIndex = 0;
         }
 
@@ -204,7 +201,6 @@ namespace BloodLink.Pages
             }
         }
 
-
         private void UpdateGridHeight()
         {
             int totalHeight = dgvDonors.ColumnHeadersHeight;
@@ -229,7 +225,6 @@ namespace BloodLink.Pages
             ApplyFilters();
         }
 
-
         private void cbStatus_SelectedIndexChanged(object sender, EventArgs e)
         {
             ApplyFilters();
@@ -246,13 +241,18 @@ namespace BloodLink.Pages
             dgvDonors.Rows.Clear();
             InsertSpacerRow();
 
+            var textInfo = CultureInfo.CurrentCulture.TextInfo;
+
             foreach (Donor donor in donors)
             {
+                string formattedName = !string.IsNullOrWhiteSpace(donor.FullName) ? textInfo.ToTitleCase(donor.FullName.ToLower()) : "";
+                string formattedCity = !string.IsNullOrWhiteSpace(donor.City) ? textInfo.ToTitleCase(donor.City.ToLower()) : "";
+
                 int rowIndex = dgvDonors.Rows.Add(
-                    donor.FullName,
+                    formattedName,
                     EnumHelper.GetDescription(donor.BloodGroup),
                     donor.Phone,
-                    donor.City,
+                    formattedCity,
                     donor.LastDonationDate.HasValue ? donor.LastDonationDate.Value.ToString("dd-MM-yyyy") : "N/A",
                     donor.IsEligible ? "Yes" : "No"
                 );
@@ -321,7 +321,7 @@ namespace BloodLink.Pages
             var result = form.ShowDialog();
             if (result == DialogResult.OK)
             {
-                loadData();
+                ApplyFilters();
             }
         }
 
@@ -341,19 +341,16 @@ namespace BloodLink.Pages
                 return;
             }
 
-
             DialogResult result = MessageBox.Show($"Sure you want to delete {donor.FullName}", "Deleting Donor", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
             if (result == DialogResult.Yes)
             {
                 _DonorService.DeleteDonor(donor.Id);
                 loadData();
             }
-
         }
 
         private void pnlDgvDonorsStyling_Paint(object sender, PaintEventArgs e)
         {
-
         }
     }
 }

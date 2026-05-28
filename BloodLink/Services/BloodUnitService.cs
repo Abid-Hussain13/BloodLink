@@ -4,6 +4,7 @@ using BloodLink.Interfaces;
 using BloodLink.Models;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace BloodLink.Services
@@ -21,22 +22,27 @@ namespace BloodLink.Services
         {
             if (unit == null)
             {
+                MessageBox.Show("Something went wrong");
                 return false;
             }
-            if (!Enum.IsDefined(typeof(BloodGroup), unit.BloodGroup))
+            if (unit.BloodGroup == null)
             {
-                return false;
-            }
-            if (unit.DonorId == null || unit.UserId == null)
-            {
-                return false;
-            }
-            if (!Enum.IsDefined(typeof(BloodUnitStatus), unit.Status))
-            {
+                MessageBox.Show("Blood Group is required");
                 return false;
             }
             if (string.IsNullOrWhiteSpace(unit.CollectedDate.ToString()))
             {
+                MessageBox.Show("Collection Date of Blood is required");
+                return false;
+            }
+            if (unit.Status == null)
+            {
+                MessageBox.Show("Status is required");
+                return false;
+            }
+            if (unit.UserId == null)
+            {
+                MessageBox.Show("Something went wrong");
                 return false;
             }
             unit.CreatedAt = DateTime.UtcNow;
@@ -51,24 +57,29 @@ namespace BloodLink.Services
 
         public bool UpdateBloodUnit(BloodUnit unit)
         {
-            if (unit == null || string.IsNullOrWhiteSpace(unit.Id))
+            if (unit == null)
             {
+                MessageBox.Show("Something went wrong");
                 return false;
             }
-            if (!Enum.IsDefined(typeof(BloodGroup), unit.BloodGroup))
+            if (unit.BloodGroup == null)
             {
-                return false;
-            }
-            if (unit.DonorId == null || unit.UserId == null)
-            {
-                return false;
-            }
-            if (!Enum.IsDefined(typeof(BloodUnitStatus), unit.Status))
-            {
+                MessageBox.Show("Blood Group is required");
                 return false;
             }
             if (string.IsNullOrWhiteSpace(unit.CollectedDate.ToString()))
             {
+                MessageBox.Show("Collection Date of Blood is required");
+                return false;
+            }
+            if (unit.Status == null)
+            {
+                MessageBox.Show("Status is required");
+                return false;
+            }
+            if (unit.UserId == null)
+            {
+                MessageBox.Show("Something went wrong");
                 return false;
             }
 
@@ -108,6 +119,10 @@ namespace BloodLink.Services
             return _bloodUnitRepository.GetBloodUnitStats();
         }
 
+        public int CollectionThisMonth()
+        {
+            return _bloodUnitRepository.CollectionThisMonth();
+        }
         public int getBloodGroupCount(Enum BloodGroup)
         {
             if(!Enum.IsDefined(BloodGroup.GetType(), BloodGroup))

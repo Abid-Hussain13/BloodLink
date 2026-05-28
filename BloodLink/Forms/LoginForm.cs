@@ -17,17 +17,17 @@ namespace BloodLink.Forms
             _authService = new AuthService();
             ApplyTheme();
 
-        #if DEBUG
+#if DEBUG
             txtEmail.Text = "admin@bloodlink.com";
             txtPassword.Text = "Admin@123";
-        # endif
+#endif
         }
         private void ApplyTheme()
         {
             this.BackColor = AppTheme.Background;
 
             pnlLeft.BackColor = AppTheme.GradientStart;
-            pnlLeft.Paint -= LeftPanel_Paint; 
+            pnlLeft.Paint -= LeftPanel_Paint;
             pnlLeft.Paint += LeftPanel_Paint;
 
             pnlRight.BackColor = AppTheme.CardBackground;
@@ -67,6 +67,12 @@ namespace BloodLink.Forms
 
         private void BtnLogin_MouseLeave(object sender, EventArgs e)
             => btnLogin.BackColor = AppTheme.PrimaryRed;
+        public void ResetFields()
+        {
+            txtPassword.Text = string.Empty;
+            lblError.Visible = false;
+            txtEmail.Focus();
+        }
 
         private void LoginButton_Click(object sender, EventArgs e)
         {
@@ -89,10 +95,14 @@ namespace BloodLink.Forms
 
         private void OpenDashboard(User user)
         {
-            this.Hide();
-            var dashboard = new DashboardShell(user);
-            dashboard.FormClosed += (s, e) => this.Close();
+            var dashboard = new DashboardShell(user, this);
             dashboard.Show();
+            this.Hide();  
+        }
+
+        private void lblSubtitle_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
