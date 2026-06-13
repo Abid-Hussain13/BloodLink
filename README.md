@@ -1,283 +1,374 @@
 # 🩸 BloodLink — Blood Bank Management System
 
-> **Every drop counts. Be someone's reason to live.**
-
-BloodLink is a desktop-based Blood Bank Management System built with **C# Windows Forms** and **SQLite**. It helps hospital staff and blood bank operators manage donors, blood inventory, patient requests, and staff accounts — all from a clean, modern dark/light-themed interface.
+BloodLink is a desktop application built with **C# (.NET, WinForms)** designed to help blood banks and hospitals manage donors, blood units, patient requests, and staff efficiently. It provides a modern, themeable dashboard interface (dark/light mode) with real-time statistics, inventory tracking, and reporting tools.
 
 ---
 
-## 📸 What Does BloodLink Do?
+## 📋 Table of Contents
 
-BloodLink streamlines blood bank operations by providing:
-
-- **Donor Management** — Register, update, search, and track donor eligibility and donation history
-- **Blood Inventory** — Track blood units by group, collection date, expiry, and status (Available / Reserved / Used / Expired)
-- **Patient Requests** — Create and manage blood requests from patients, track fulfillment status
-- **Reports & Analytics** — Visual charts for monthly donations, blood stock levels, and request status breakdown
-- **Staff Management** — Admin can add, update, and remove operator accounts
-- **Auto-expiry** — Blood units are automatically marked as Expired when their date passes
-- **Dark / Light Theme** — Toggle between themes with a smooth animated pill switch
+- [About the Project](#about-the-project)
+- [Features](#features)
+- [Project Structure](#project-structure)
+- [Tech Stack](#tech-stack)
+- [Database Schema](#database-schema)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Required NuGet Packages](#required-nuget-packages)
+  - [Setup Instructions](#setup-instructions)
+  - [Database Setup](#database-setup)
+- [Default Login Credentials](#default-login-credentials)
+- [Screenshots](#screenshots)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
-## 🏗️ Project Structure
+## 📖 About the Project
 
-```
-BloodLink/
-│
-├── Models/                  # Data models
-│   ├── BloodUnit.cs
-│   ├── Donor.cs
-│   ├── PatientRequest.cs
-│   ├── PatientModel.cs
-│   ├── BloodIssuance.cs
-│   ├── BloodUnitStats.cs
-│   ├── User.cs
-│   └── Enums.cs             # BloodGroup, Role, Gender, Status enums
-│
-├── Database/                # SQLite data layer
-│   ├── DatabaseHelper.cs    # DB init, table creation, seeding
-│   ├── BloodUnitRepository.cs
-│   ├── DonorRepository.cs
-│   ├── PatientRequestRepository.cs
-│   └── UserRepository.cs
-│
-├── Interfaces/              # Repository contracts
-│   ├── IBloodUnitRepository.cs
-│   └── IPatientRequestRepository.cs
-│
-├── Services/                # Business logic layer
-│   ├── AuthService.cs
-│   ├── BloodUnitService.cs
-│   ├── DonorService.cs
-│   └── PatientRequestService.cs
-│
-├── Forms/                   # Dialogs / pop-up forms
-│   ├── LoginForm.cs/.Designer.cs
-│   ├── DashboardShell.cs/.Designer.cs
-│   ├── DonorForm.cs/.Designer.cs
-│   ├── BloodUnitForm.cs/.Designer.cs
-│   ├── PatientForm.cs/.Designer.cs
-│   └── UserForm.cs/.Designer.cs
-│
-├── Pages/                   # UserControl pages loaded in dashboard
-│   ├── AdminDashboardPage.cs/.Designer.cs
-│   ├── DonorPage.cs/.Designer.cs
-│   ├── BloodUnitPage.cs/.Designer.cs
-│   ├── PatientsPage.cs/.Designer.cs
-│   ├── ReportsPage.cs/.Designer.cs
-│   └── StaffPage.cs/.Designer.cs
-│
-├── Helpers/                 # Utility classes
-│   ├── AppTheme.cs          # Colors, fonts, dark/light mode
-│   ├── PaintHelper.cs       # Custom rounded UI rendering
-│   └── EnumHelper.cs        # Enum ↔ description conversion
-│
-└── Program.cs               # Entry point
-```
+BloodLink streamlines the day-to-day operations of a blood bank by providing:
+
+- A centralized **Donor Management** system
+- **Blood Unit Inventory** tracking with automatic expiry handling
+- **Patient Request** management for blood issuance
+- An **Admin Dashboard** with live statistics (total donors, blood units, expiring units, blood group breakdown)
+- **Reports** with charts (monthly donations, request status, stock levels)
+- **Staff Management** for Admins to add/update/delete operator accounts
+- Configurable **Settings** (session timeout, low-stock thresholds)
+- A clean, modern **dark/light theme** toggle
+
+The application uses **role-based access control** with two roles: `Admin` and `Operator`.
 
 ---
 
 ## ✨ Features
 
-| Feature | Details |
-|---|---|
-| 🔐 Login | Email + BCrypt password authentication |
-| 👥 Role-based access | Admin sees all pages; Operators see limited pages |
-| 🩸 Blood inventory | Full CRUD, filter by group & status |
-| 🏥 Patient requests | Track Pending / Fulfilled / Cancelled requests |
-| 👤 Donor registry | Eligibility tracking, last & next donation dates |
-| 📊 Reports | Bar chart (monthly donations), pie chart (request status), stock bars |
-| ⏰ Auto-expiry | Units expire automatically; checked on startup + every hour |
-| 🌙 Dark/Light theme | Smooth animated toggle switch in the header |
-| 🔍 Search & filter | Live search across donors, blood units, and patient requests |
+- 🔐 **Authentication** — Secure login with hashed passwords (BCrypt)
+- 🩸 **Donor Management** — Add, update, view, delete, and search donors with eligibility tracking
+- 🧪 **Blood Unit Inventory** — Track collection date, expiry date, status (Available, Reserved, Used, Expired), and linked donor
+- 🏥 **Patient Requests** — Manage blood requests with status tracking (Pending, Fulfilled, Cancelled)
+- 📊 **Admin Dashboard** — Real-time stats: total donors, blood units, patients today, expiring units, blood group breakdown
+- 📈 **Reports Page** — Visual charts for blood stock levels, monthly donations, and request status (via LiveCharts)
+- 👥 **Staff Management** — Admins can add/edit/delete operator accounts
+- ⚙️ **Settings** — Configure session timeout and low-stock expiry threshold
+- 🌓 **Dark/Light Theme Toggle** — Persistent theming across the application
+- ⏱️ **Auto-Expiry** — Background timer automatically marks expired blood units
 
 ---
 
-## 🖥️ Tech Stack
+## 🗂️ Project Structure
+BloodLink/
+├── BloodLink.WindowsApp
+|   ├── Program.cs                  # Application entry point
+|   ├── App.config                  # Database connection configuration
+|   ├── Forms/                       # Dialog forms (Login, Donor, BloodUnit, Patient, User)
+|   ├── Pages/                        # Dashboard pages (Donor, BloodUnit, Patients, Reports, Staff, Settings, AdminDashboard)
+|   ├── Services/                     # Business logic layer (AuthService, DonorService, BloodUnitService, PatientRequestService)
+|   ├── Helpers/                       # AppTheme, PaintHelper, EnumHelper (UI helpers)
 
-| Layer | Technology |
-|---|---|
-| Language | C# (.NET 8 / .NET 9) |
-| UI Framework | Windows Forms (WinForms) |
-| Database | SQLite (via `Microsoft.Data.Sqlite`) |
-| Password Hashing | `BCrypt.Net-Next` |
-| Charts | `LiveChartsCore.SkiaSharpView.WinForms` |
-| Icons | `FontAwesome.Sharp` |
+├── Core/
+│   ├── Database/                 # Repositories & DB connection
+│   ├── Interfaces/               # Repository interfaces
+│   ├── Models/                   # Data models (Donor, BloodUnit, PatientRequest, User, etc.)
+│   └── Helpers/                  # EnumHelper and utility helpers
 
 ---
 
-## 📦 NuGet Packages
+---
 
-Install the following packages via NuGet Package Manager or the .NET CLI:
+## 🛠️ Tech Stack
 
-```bash
-dotnet add package Microsoft.Data.Sqlite
-dotnet add package BCrypt.Net-Next
-dotnet add package LiveChartsCore.SkiaSharpView.WinForms
-dotnet add package FontAwesome.Sharp
+| Component        | Technology                              |
+|-------------------|------------------------------------------|
+| Language          | C# (.NET 8 / .NET Framework — WinForms)  |
+| UI Framework      | Windows Forms (WinForms)                 |
+| Database          | Microsoft SQL Server                     |
+| ORM/Data Access   | ADO.NET (`Microsoft.Data.SqlClient`)     |
+| Charts            | LiveChartsCore (SkiaSharp)               |
+| Icons             | FontAwesome.Sharp                        |
+| Password Hashing  | BCrypt.Net                               |
+
+---
+
+## 🗄️ Database Schema
+
+BloodLink uses **Microsoft SQL Server**. You'll need to create a database named `bloodLinkDB` and the following tables:
+
+### `Users`
+| Column     | Type      | Notes                  |
+|------------|-----------|------------------------|
+| Id         | TEXT/VARCHAR | Primary Key         |
+| FullName   | NVARCHAR  | Not null               |
+| Email      | NVARCHAR  | Unique, not null       |
+| Password   | NVARCHAR  | Hashed (BCrypt)        |
+| Role       | NVARCHAR  | `Admin` / `Operator`   |
+| CreatedAt  | DATETIME  | Not null               |
+
+### `Donors`
+| Column           | Type      | Notes                          |
+|------------------|-----------|---------------------------------|
+| Id               | VARCHAR   | Primary Key                    |
+| FullName         | NVARCHAR  | Not null                       |
+| BloodGroup       | NVARCHAR  | Not null                       |
+| Phone            | NVARCHAR  | Not null                       |
+| City             | NVARCHAR  | Not null                       |
+| Area             | NVARCHAR  | Nullable                       |
+| Age              | INT       | Nullable                       |
+| Weight           | FLOAT     | Nullable                       |
+| Gender           | NVARCHAR  | Nullable                       |
+| IsEligible       | BIT       | Default `1`                    |
+| LastDonationDate | DATETIME  | Nullable                       |
+| NextEligibleDate | DATETIME  | Nullable                       |
+| UserId           | VARCHAR   | FK → Users.Id                  |
+| CreatedAt        | DATETIME  | Not null                       |
+
+### `BloodUnits`
+| Column        | Type      | Notes                              |
+|---------------|-----------|-------------------------------------|
+| Id            | VARCHAR   | Primary Key                        |
+| BloodGroup    | NVARCHAR  | Not null                           |
+| CollectedDate | DATETIME  | Not null                           |
+| ExpiryDate    | DATETIME  | Not null                           |
+| DonorId       | VARCHAR   | FK → Donors.Id, nullable           |
+| Status        | NVARCHAR  | `Available`/`Reserved`/`Used`/`Expired` |
+| Notes         | NVARCHAR  | Nullable                           |
+| UserId        | VARCHAR   | FK → Users.Id                      |
+| CreatedAt     | DATETIME  | Not null                           |
+
+### `PatientRequests`
+| Column         | Type      | Notes                                |
+|----------------|-----------|---------------------------------------|
+| Id             | VARCHAR   | Primary Key                          |
+| PatientName    | NVARCHAR  | Not null                             |
+| PatientAge     | INT       | Nullable                             |
+| BloodGroup     | NVARCHAR  | Not null                             |
+| UnitsRequired  | INT       | Default `1`                          |
+| Ward           | NVARCHAR  | Nullable                             |
+| DoctorName     | NVARCHAR  | Nullable                             |
+| Status         | NVARCHAR  | `Pending`/`Fulfilled`/`Cancelled`    |
+| Notes          | NVARCHAR  | Nullable                             |
+| UserId         | VARCHAR   | FK → Users.Id                        |
+| CreatedAt      | DATETIME  | Not null                             |
+
+### `BloodIssuances`
+| Column           | Type      | Notes                            |
+|------------------|-----------|------------------------------------|
+| Id               | VARCHAR   | Primary Key                       |
+| PatientRequestId | VARCHAR   | FK → PatientRequests.Id           |
+| BloodUnitId      | VARCHAR   | FK → BloodUnits.Id                |
+| IssuedByUserId   | VARCHAR   | FK → Users.Id                      |
+| IssuedDate       | DATETIME  | Not null                          |
+| Notes            | NVARCHAR  | Nullable                          |
+
+### `AppSettings`
+| Column | Type     | Notes        |
+|--------|----------|--------------|
+| Key    | VARCHAR  | Primary Key  |
+| Value  | NVARCHAR | Not null     |
+
+> 💡 **Tip:** You can use the SQL script below to quickly create all tables.
+
+<details>
+<summary>📜 Click to expand full SQL setup script</summary>
+
+```sql
+CREATE DATABASE bloodLinkDB;
+GO
+USE bloodLinkDB;
+GO
+
+CREATE TABLE Users (
+    Id VARCHAR(50) PRIMARY KEY,
+    FullName NVARCHAR(150) NOT NULL,
+    Email NVARCHAR(150) UNIQUE NOT NULL,
+    Password NVARCHAR(255) NOT NULL,
+    Role NVARCHAR(20) NOT NULL,
+    CreatedAt DATETIME NOT NULL
+);
+
+CREATE TABLE Donors (
+    Id VARCHAR(50) PRIMARY KEY,
+    FullName NVARCHAR(150) NOT NULL,
+    BloodGroup NVARCHAR(10) NOT NULL,
+    Phone NVARCHAR(20) NOT NULL,
+    City NVARCHAR(100) NOT NULL,
+    Area NVARCHAR(100),
+    Age INT,
+    Weight FLOAT,
+    Gender NVARCHAR(20),
+    IsEligible BIT NOT NULL DEFAULT 1,
+    LastDonationDate DATETIME,
+    NextEligibleDate DATETIME,
+    UserId VARCHAR(50),
+    CreatedAt DATETIME NOT NULL,
+    FOREIGN KEY (UserId) REFERENCES Users(Id)
+);
+
+CREATE TABLE BloodUnits (
+    Id VARCHAR(50) PRIMARY KEY,
+    BloodGroup NVARCHAR(10) NOT NULL,
+    CollectedDate DATETIME NOT NULL,
+    ExpiryDate DATETIME NOT NULL,
+    DonorId VARCHAR(50),
+    Status NVARCHAR(20) NOT NULL DEFAULT 'Available',
+    Notes NVARCHAR(MAX),
+    UserId VARCHAR(50),
+    CreatedAt DATETIME NOT NULL,
+    FOREIGN KEY (DonorId) REFERENCES Donors(Id),
+    FOREIGN KEY (UserId) REFERENCES Users(Id)
+);
+
+CREATE TABLE PatientRequests (
+    Id VARCHAR(50) PRIMARY KEY,
+    PatientName NVARCHAR(150) NOT NULL,
+    PatientAge INT,
+    BloodGroup NVARCHAR(10) NOT NULL,
+    UnitsRequired INT NOT NULL DEFAULT 1,
+    Ward NVARCHAR(100),
+    DoctorName NVARCHAR(150),
+    Status NVARCHAR(20) NOT NULL DEFAULT 'Pending',
+    Notes NVARCHAR(MAX),
+    UserId VARCHAR(50),
+    CreatedAt DATETIME NOT NULL,
+    FOREIGN KEY (UserId) REFERENCES Users(Id)
+);
+
+CREATE TABLE BloodIssuances (
+    Id VARCHAR(50) PRIMARY KEY,
+    PatientRequestId VARCHAR(50) NOT NULL,
+    BloodUnitId VARCHAR(50) NOT NULL,
+    IssuedByUserId VARCHAR(50) NOT NULL,
+    IssuedDate DATETIME NOT NULL,
+    Notes NVARCHAR(MAX),
+    FOREIGN KEY (PatientRequestId) REFERENCES PatientRequests(Id),
+    FOREIGN KEY (BloodUnitId) REFERENCES BloodUnits(Id),
+    FOREIGN KEY (IssuedByUserId) REFERENCES Users(Id)
+);
+
+CREATE TABLE AppSettings (
+    [Key] VARCHAR(100) PRIMARY KEY,
+    Value NVARCHAR(MAX) NOT NULL
+);
 ```
 
-Or search and install them directly in **Visual Studio → Tools → NuGet Package Manager → Manage NuGet Packages for Solution**.
+</details>
 
 ---
 
-## 🗄️ Database
-
-BloodLink uses **SQLite** and creates its database automatically on first launch at:
-
-```
-%AppData%\BloodLink\bloodlink.db
-```
-
-> ✅ You do **not** need to create tables manually. The app creates all tables and seeds initial data on startup via `DatabaseHelper.Initialize()`.
-
-### Tables Created Automatically
-
-#### `Users`
-| Column | Type | Notes |
-|---|---|---|
-| Id | TEXT (PK) | Format: `USR-YYYY-XXXXXX` |
-| FullName | TEXT | |
-| Email | TEXT (UNIQUE) | |
-| Password | TEXT | BCrypt hashed |
-| Role | TEXT | `Admin` or `Operator` |
-| CreatedAt | TEXT | UTC datetime |
-
-#### `Donors`
-| Column | Type | Notes |
-|---|---|---|
-| Id | TEXT (PK) | Format: `DNR-YYYY-XXXXXX` |
-| FullName | TEXT | |
-| BloodGroup | TEXT | e.g. `A+`, `O-` |
-| Phone | TEXT | |
-| City | TEXT | |
-| Area | TEXT | Optional |
-| Age | INTEGER | |
-| Weight | REAL | |
-| Gender | TEXT | `Male` / `Female` |
-| IsEligible | INTEGER | `1` = eligible, `0` = not |
-| LastDonationDate | TEXT | Optional |
-| NextEligibleDate | TEXT | Auto-calculated |
-| UserId | TEXT (FK) | References `Users.Id` |
-| CreatedAt | TEXT | |
-
-#### `BloodUnits`
-| Column | Type | Notes |
-|---|---|---|
-| Id | TEXT (PK) | Format: `A+ -— BL-YYYY-XXXXXX` |
-| BloodGroup | TEXT | |
-| CollectedDate | TEXT | |
-| ExpiryDate | TEXT | CollectedDate + 35 days |
-| DonorId | TEXT (FK) | References `Donors.Id` |
-| Status | TEXT | `Available`, `Reserved`, `Used`, `Expired` |
-| Notes | TEXT | Optional |
-| UserId | TEXT (FK) | References `Users.Id` |
-| CreatedAt | TEXT | |
-
-#### `PatientRequests`
-| Column | Type | Notes |
-|---|---|---|
-| Id | TEXT (PK) | Format: `PR-YYYY-XXXXXX` |
-| PatientName | TEXT | |
-| PatientAge | TEXT | Optional |
-| BloodGroup | TEXT | |
-| UnitsRequired | INTEGER | Default `1` |
-| Ward | TEXT | Optional |
-| DoctorName | TEXT | Optional |
-| Status | TEXT | `Pending`, `Fulfilled`, `Cancelled` |
-| Notes | TEXT | Optional |
-| UserId | TEXT (FK) | References `Users.Id` |
-| CreatedAt | TEXT | |
-
-#### `BloodIssuances`
-| Column | Type | Notes |
-|---|---|---|
-| Id | TEXT (PK) | Format: `ISS-YYYY-XXXXXX` |
-| PatientRequestId | TEXT (FK) | |
-| BloodUnitId | TEXT (FK) | |
-| IssuedByUserId | TEXT (FK) | |
-| IssuedDate | TEXT | |
-| Notes | TEXT | Optional |
-
----
-
-## 🚀 How to Run Locally
+## 🚀 Getting Started
 
 ### Prerequisites
 
-- [Visual Studio 2022](https://visualstudio.microsoft.com/) (or later) with **.NET Desktop Development** workload
-- .NET 8 SDK or later
-- Windows OS (WinForms is Windows-only)
+Make sure you have the following installed:
 
-### Steps
+- [Visual Studio 2022](https://visualstudio.microsoft.com/) (with **.NET Desktop Development** workload)
+- [.NET 8 SDK](https://dotnet.microsoft.com/download)
+- [Microsoft SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads) (Express edition works fine)
+- [SQL Server Management Studio (SSMS)](https://learn.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms) (optional, for managing the DB)
 
-**1. Clone the repository**
-```bash
-git clone https://github.com/your-username/BloodLink.git
-cd BloodLink
+### Required NuGet Packages
+
+Install the following packages via **NuGet Package Manager** or the Package Manager Console:
+
+```powershell
+Install-Package Microsoft.Data.SqlClient
+Install-Package BCrypt.Net-Next
+Install-Package FontAwesome.Sharp
+Install-Package LiveChartsCore.SkiaSharpView.WinForms
+Install-Package Microsoft.Data.Sqlite
 ```
 
-**2. Open in Visual Studio**
+> ⚠️ Note: The project references both `Microsoft.Data.SqlClient` (for main data operations) and `Microsoft.Data.Sqlite` (used in a designer-generated component). Ensure both are installed to avoid build errors.
 
-Open `BloodLink.sln` in Visual Studio.
+### Setup Instructions
 
-**3. Restore NuGet packages**
+1. **Clone the repository**
 
-Visual Studio usually does this automatically. If not:
 ```bash
-dotnet restore
+   git clone https://github.com/your-username/BloodLink.git
+   cd BloodLink
 ```
 
-Or go to **Tools → NuGet Package Manager → Manage NuGet Packages for Solution** and click **Restore**.
+2. **Open the project** in Visual Studio (`BloodLink.sln`)
 
-**4. Build the project**
+3. **Restore NuGet packages**
 
-Press `Ctrl + Shift + B` or go to **Build → Build Solution**.
+   Visual Studio will usually do this automatically. If not, right-click the solution → **Restore NuGet Packages**.
 
-**5. Run the app**
+4. **Configure the database connection**
 
-Press `F5` or click **Start**. The database and all tables are created automatically on first launch.
+   Open `App.config` and update the connection string to match your SQL Server instance:
+
+```xml
+   <connectionStrings>
+       <add name="BloodLinkCon"
+            connectionString="Server=YOUR_SERVER_NAME; Database=bloodLinkDB;
+                Integrated Security=True; TrustServerCertificate=true;"
+            providerName="Microsoft.Data.SqlClient"
+       />
+   </connectionStrings>
+```
+
+   Replace `YOUR_SERVER_NAME` with your SQL Server instance name (e.g., `localhost`, `.\SQLEXPRESS`, etc.)
+
+5. **Set up the database**
+
+   Run the SQL script provided in the [Database Schema](#database-schema) section above using SSMS or the Azure Data Studio query editor.
+
+6. **Build the solution**
+7. **Run the application**
+
+   Press `F5` or click **Start** in Visual Studio.
+
+### Database Setup
+
+After creating the tables, you'll need at least one **Admin** account to log in. You can insert one manually:
+
+```sql
+-- Password: Admin@123 (hashed with BCrypt)
+INSERT INTO Users (Id, FullName, Email, Password, Role, CreatedAt)
+VALUES (
+    'USR-2026-ABC123',
+    'Administrator',
+    'admin@bloodlink.com',
+    '$2a$11$your_bcrypt_hashed_password_here',
+    'Admin',
+    GETUTCDATE()
+);
+```
+
+> 💡 **Tip:** You can generate a BCrypt hash using an online BCrypt generator tool, or temporarily add a few lines of C# code to print `BCrypt.Net.BCrypt.HashPassword("Admin@123")` to the console.
 
 ---
 
 ## 🔑 Default Login Credentials
 
-The app seeds two accounts on first run:
-
-| Role | Email | Password |
-|---|---|---|
-| Admin | `admin@bloodlink.com` | `Admin@123` |
-| Operator | `abidhussainme1@gmail.com` | `whatsupmate` |
-
-> ⚠️ Change these credentials after your first login, especially in production.
+If you're running in **DEBUG mode**, the login form auto-fills with:
+> ⚠️ Make sure a corresponding user exists in your `Users` table with these credentials (hashed) for login to succeed.
 
 ---
 
-## 📋 Role Permissions
+## 📸 Screenshots
 
-| Page | Admin | Operator |
-|---|---|---|
-| Dashboard | ✅ | ✅ |
-| Donors | ✅ | ✅ |
-| Blood Inventory | ✅ | ✅ |
-| Patients | ✅ | ✅ |
-| Reports | ✅ | ❌ |
-| Staff Management | ✅ | ❌ |
-| Settings | ✅ | ❌ |
+> _Add screenshots of the Login page, Dashboard, Donor Management, Blood Inventory, Patient Requests, and Reports here._
 
 ---
 
 ## 🤝 Contributing
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you'd like to change.
+Contributions are welcome! To contribute:
+
+1. Fork the repository
+2. Create a new branch (`git checkout -b feature/your-feature`)
+3. Commit your changes (`git commit -m 'Add some feature'`)
+4. Push to the branch (`git push origin feature/your-feature`)
+5. Open a Pull Request
 
 ---
 
 ## 📄 License
 
-This project is open source and available under the [MIT License](LICENSE).
+This project is licensed under the **MIT License** — feel free to use, modify, and distribute it.
 
 ---
 
-<p align="center">Made with ❤️ for blood bank staff everywhere</p>
+<p align="center">Made with ❤️ for saving lives, one donation at a time.</p>
