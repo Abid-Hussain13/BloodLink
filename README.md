@@ -17,7 +17,6 @@ BloodLink is a desktop application built with **C# (.NET, WinForms)** designed t
   - [Setup Instructions](#setup-instructions)
   - [Database Setup](#database-setup)
 - [Default Login Credentials](#default-login-credentials)
-- [Screenshots](#screenshots)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -56,6 +55,8 @@ The application uses **role-based access control** with two roles: `Admin` and `
 ---
 
 ## 🗂️ Project Structure
+
+```text
 BloodLink/
 ├── Core/
 │   ├── Database/           # Repositories & DB connection
@@ -69,9 +70,8 @@ BloodLink/
     ├── Pages/              # Dashboard pages (Donor, BloodUnit, Reports, etc.)
     ├── Services/           # Business logic layer (AuthService, DonorService, etc.)
     └── Helpers/            # UI helpers (AppTheme, PaintHelper, EnumHelper)
-
 ---
-
+```
 ## 🛠️ Tech Stack
 
 | Component        | Technology                              |
@@ -340,13 +340,8 @@ VALUES (
 ## 🔑 Default Login Credentials
 
 If you're running in **DEBUG mode**, the login form auto-fills with:
+**Email:** admin@bloodlink.com | **Password:** Admin@123
 > ⚠️ Make sure a corresponding user exists in your `Users` table with these credentials (hashed) for login to succeed.
-
----
-
-## 📸 Screenshots
-
-> _Add screenshots of the Login page, Dashboard, Donor Management, Blood Inventory, Patient Requests, and Reports here._
 
 ---
 
@@ -368,4 +363,4 @@ This project is licensed under the **MIT License** — feel free to use, modify,
 
 ---
 
-<p align="center">Made with ❤️ for saving lives, one donation at a time.</p>
+<p align="center">Made with hard work for saving lives, one donation at a time.</p>
