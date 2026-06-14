@@ -108,7 +108,7 @@ namespace BloodLink.Forms
             if (_mode == FormMode.Add)
             {
                 tbID.ReadOnly = false;
-                tbID.Enabled = true;
+                tbID.Enabled = false;
             }
             else
             {

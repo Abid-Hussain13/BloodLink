@@ -1,6 +1,6 @@
 ﻿namespace BloodLink.Pages
 {
-    partial class BloodUnitPage
+    partial class BloodUnitView
     {
         /// <summary> 
         /// Required designer variable.
@@ -684,12 +684,12 @@
             lblTotalUnitsFooter.TabIndex = 0;
             lblTotalUnitsFooter.Text = "all groups";
             // 
-            // BloodUnitPage
+            // BloodUnitView
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             Controls.Add(tlpBloodUnit);
-            Name = "BloodUnitPage";
+            Name = "BloodUnitView";
             Size = new Size(853, 489);
             tlpBloodUnit.ResumeLayout(false);
             pnlDonorsList.ResumeLayout(false);

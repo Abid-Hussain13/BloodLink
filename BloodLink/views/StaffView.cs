@@ -7,7 +7,7 @@ using System.Drawing.Drawing2D;
 
 namespace BloodLink.Pages
 {
-    public partial class StaffPage : UserControl
+    public partial class StaffView : UserControl
     {
         private readonly PaintHelper _paintHelper = new PaintHelper();
         private readonly AuthService _authService;
@@ -15,7 +15,7 @@ namespace BloodLink.Pages
 
         private Panel pnlStaffList;
 
-        public StaffPage(AuthService authService, User user)
+        public StaffView(AuthService authService, User user)
         {
             InitializeComponent();
             _authService = authService;

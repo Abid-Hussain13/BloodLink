@@ -1,6 +1,6 @@
 ﻿namespace BloodLink.Pages
 {
-    partial class DonorPage
+    partial class DonorView
     {
         /// <summary> 
         /// Required designer variable.

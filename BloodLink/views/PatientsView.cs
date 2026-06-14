@@ -3,10 +3,11 @@ using BloodLink.Helpers;
 using BloodLink.Core.Models;
 using BloodLink.Services;
 using Color = System.Drawing.Color;
+using BloodLink.Core.Interfaces;
 
 namespace BloodLink.Pages
 {
-    public partial class PatientsPage : UserControl
+    public partial class PatientsView : UserControl, IRefreshablePage
     {
         private readonly PaintHelper _paintHelper = new PaintHelper();
         private PatientRequestService _service;
@@ -14,7 +15,7 @@ namespace BloodLink.Pages
         private BindingSource _myBindingSource = new BindingSource();
         private List<PatientRequest> _patientRequestList = new List<PatientRequest>();
 
-        public PatientsPage(PatientRequestService service, User currentUser)
+        public PatientsView(PatientRequestService service, User currentUser)
         {
             InitializeComponent();
             _service = service;
@@ -101,6 +102,10 @@ namespace BloodLink.Pages
             btn.FlatAppearance.BorderColor = AppTheme.PrimaryRed;
             btn.Font = AppTheme.FontSmall;
             _paintHelper.AddRounding(btn, 4);
+        }
+        public void RefreshPageData()
+        {
+            loadData();
         }
 
         private void loadData()

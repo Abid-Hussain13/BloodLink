@@ -8,11 +8,10 @@ using System.Data;
 using SkiaSharp;
 using BloodLink.Core.Models;
 using BloodLink.Core.Interfaces;
-using System.Threading.Tasks; // Required for Task support
 
 namespace BloodLink.Pages
 {
-    public partial class ReportsPage : UserControl, IRefreshablePage
+    public partial class ReportsView : UserControl, IRefreshablePage
     {
         private readonly PaintHelper _paintHelper = new PaintHelper();
         private BloodUnitService _bloodUnitService = new BloodUnitService();
@@ -20,7 +19,7 @@ namespace BloodLink.Pages
         private int _maxUnits = 1;
         private (string Group, int Units, string Level)[] _stockData = Array.Empty<(string, int, string)>();
 
-        public ReportsPage()
+        public ReportsView()
         {
             InitializeComponent();
             ApplyTheme();
@@ -192,14 +191,12 @@ namespace BloodLink.Pages
             }
         }
 
-        // Added 'async' keyword to method matching what constructor needs
         private async Task SetupMonthlyDonationsChart()
         {
             var months = Enumerable.Range(0, 6)
                          .Select(i => DateTime.UtcNow.AddMonths(-5 + i))
                          .ToList();
 
-            // Note: Make sure to implement GetMonthlyDonationsAsync in your service file later!
             var donationDate = await _bloodUnitService.GetMonthlyDonationsAsync();
 
             var values = months.Select(m =>
@@ -281,10 +278,8 @@ namespace BloodLink.Pages
             _paintHelper.AddRounding(tlp);
         }
 
-        // Added 'async' keyword to match implementation requirements
         private async Task SetupRequestStatusChart()
         {
-            // Note: Ensure GetRequestStatusStatsAsync() is added to PatientRequestService later
             var stats = await _patientRequestService.GetRequestStatusStatsAsync();
 
             int fulfilled = stats.ContainsKey("Fulfilled") ? stats["Fulfilled"] : 0;

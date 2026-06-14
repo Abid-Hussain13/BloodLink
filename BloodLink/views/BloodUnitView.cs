@@ -4,10 +4,11 @@ using BloodLink.Core.Models;
 using BloodLink.Services;
 using Color = System.Drawing.Color;
 using System.Data;
+using BloodLink.Core.Interfaces;
 
 namespace BloodLink.Pages
 {
-    public partial class BloodUnitPage : UserControl
+    public partial class BloodUnitView : UserControl, IRefreshablePage
     {
         private readonly PaintHelper _paintHelper = new PaintHelper();
         private BloodUnitService _service;
@@ -15,7 +16,7 @@ namespace BloodLink.Pages
         private BindingSource _myBindingSource = new BindingSource();
         private List<BloodUnit> _bloodUnitList = new List<BloodUnit>();
 
-        public BloodUnitPage(BloodUnitService service, User currentUser)
+        public BloodUnitView(BloodUnitService service, User currentUser)
         {
             InitializeComponent();
             _service = service;
@@ -141,7 +142,10 @@ namespace BloodLink.Pages
 
             _paintHelper.AddClickEventToAllControls(this, dgvBloodUnits);
         }
-
+        public void RefreshPageData()
+        {
+            loadData();
+        }
         private void BloodUnitPage_HandleCreated(object sender, EventArgs e)
         {
             loadData();
@@ -211,7 +215,6 @@ namespace BloodLink.Pages
             int headerHeight = dgvBloodUnits.ColumnHeadersHeight;
             int totalHeight = rowsHeight + headerHeight;
 
-            // Cap at available parent height
             int maxHeight = pnlDonorsList.Height - pnlSearchOperations.Height - pnlSecondRowStyling.Padding.Top - pnlSecondRowStyling.Padding.Bottom;
 
             dgvBloodUnits.Height = Math.Min(totalHeight, maxHeight);

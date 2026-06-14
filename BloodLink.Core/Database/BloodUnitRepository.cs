@@ -227,13 +227,15 @@ namespace BloodLink.Core.Database
             {
                 using var connection = DbConnection.GetConnection();
                 string sql = @"SELECT COUNT(*) FROM BloodUnits 
-                               WHERE ExpiryDate <= @expiryThreshold 
-                               AND (Status = 'Available' OR Status = 'Reserved');";
+                       WHERE ExpiryDate >= @now
+                       AND ExpiryDate <= @expiryThreshold 
+                       AND (Status = 'Available' OR Status = 'Reserved');";
                 using var command = new SqlCommand(sql, connection);
 
                 string? saved = _appSettingRepository.GetSetting("ExpiryThreshold");
                 int days = int.TryParse(saved, out int d) ? d : 7;
 
+                command.Parameters.AddWithValue("@now", DateTime.UtcNow);
                 command.Parameters.AddWithValue("@expiryThreshold", DateTime.UtcNow.AddDays(days));
                 return Convert.ToInt32(await command.ExecuteScalarAsync());
             }
@@ -251,14 +253,16 @@ namespace BloodLink.Core.Database
             {
                 using var connection = DbConnection.GetConnection();
                 string sql = @"SELECT Id, ExpiryDate FROM BloodUnits 
-                               WHERE ExpiryDate <= @expiryThreshold 
-                               AND (Status = 'Available' OR Status = 'Reserved')
-                               ORDER BY ExpiryDate ASC";
+                       WHERE ExpiryDate >= @now
+                       AND ExpiryDate <= @expiryThreshold 
+                       AND (Status = 'Available' OR Status = 'Reserved')
+                       ORDER BY ExpiryDate ASC";
                 using var command = new SqlCommand(sql, connection);
 
                 string? saved = _appSettingRepository.GetSetting("ExpiryThreshold");
                 int days = int.TryParse(saved, out int d) ? d : 7;
 
+                command.Parameters.AddWithValue("@now", DateTime.UtcNow);
                 command.Parameters.AddWithValue("@expiryThreshold", DateTime.UtcNow.AddDays(days));
 
                 using var reader = await command.ExecuteReaderAsync();

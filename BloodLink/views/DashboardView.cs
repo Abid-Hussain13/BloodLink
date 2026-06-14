@@ -7,7 +7,7 @@ using System.Drawing.Drawing2D;
 
 namespace BloodLink.Pages
 {
-    public partial class AdminDashboardPage : UserControl, IRefreshablePage
+    public partial class DashboardView : UserControl, IRefreshablePage
     {
         private readonly DonorService _donorService = new DonorService();
         private readonly DonorService donorService = new DonorService();
@@ -16,7 +16,8 @@ namespace BloodLink.Pages
         private readonly IAppSettingRepository _appSettingRepository = new AppSettingsRepository();
         private readonly PaintHelper _paintHelper = new PaintHelper();
         private bool _allowSelection = false;
-        public AdminDashboardPage()
+        private bool _isLoadingData = false;
+        public DashboardView()
         {
             InitializeComponent();
             ApplyTheme();
@@ -176,84 +177,94 @@ namespace BloodLink.Pages
             _ = LoadDataAsync();
             _allowSelection = true;
         }
+
         private async Task loadData()
         {
-            DonorStats stats = await donorService.GetDonorStatsAsync();
-            lblTotalDonorCount.Text = stats != null ? stats.TotalDonors.ToString() : "0";
-            string donorThisMonth = _donorService.DonorsThisMonth().ToString();
-            lblTotalDonorInfo.Text = $"+{donorThisMonth} this month";
-
-            var bloodUnitStats = await bloodUnitService.GetBloodUnitStatsAsync();
-            lblBloodUnitsCount.Text = bloodUnitStats.TotalUnits.ToString() ?? "0";
-
-            int totalPatientToday = await patientRequestService.GetAllPatientInDayAsync();
-            lblPatientTodayCount.Text = totalPatientToday.ToString() ?? "0";
-            int patientsPendingToday = await patientRequestService.GetPatientsPendingTodayAsync();
-            lblPatientTodayInfo.Text = $"{patientsPendingToday} in Pending";
-
-            int expiringSoonCount = await bloodUnitService.getExpiringSoonCountAsync();
-            lblExpiringSoonCount.Text = expiringSoonCount.ToString() ?? "0";
-            string withInDays = _appSettingRepository.GetSetting("ExpiryThreshold");
-            lblExpiringSoonInfo.Text = $"within {withInDays} days";
-
-            int APlusCount = await bloodUnitService.getBloodGroupCountAsync(BloodGroup.APositive);
-            lblAPlusCount.Text = APlusCount.ToString() ?? "0";
-            int AMiusCount = await bloodUnitService.getBloodGroupCountAsync(BloodGroup.ANegative);
-            lblAMinusCount.Text = AMiusCount.ToString() ?? "0";
-            int BPlusCount = await bloodUnitService.getBloodGroupCountAsync(BloodGroup.BPositive);
-            lblBPlusCount.Text = BPlusCount.ToString() ?? "0";
-            int BMinusCount = await bloodUnitService.getBloodGroupCountAsync(BloodGroup.BNegative);
-            lblBMinusCount.Text = BMinusCount.ToString() ?? "0";
-            int OPlusCount = await bloodUnitService.getBloodGroupCountAsync(BloodGroup.OPositive);
-            lblOPlusCount.Text = OPlusCount.ToString() ?? "0";
-            int OMinusCount = await bloodUnitService.getBloodGroupCountAsync(BloodGroup.ONegative);
-            lblOMinusCount.Text = OMinusCount.ToString() ?? "0";
-            int ABPlusCount = await bloodUnitService.getBloodGroupCountAsync(BloodGroup.ABPositive);
-            lblABPlusCount.Text = ABPlusCount.ToString() ?? "0";
-            int ABMinusCount = await bloodUnitService.getBloodGroupCountAsync(BloodGroup.ABNegative);
-            lblABMinusCount.Text = ABMinusCount.ToString() ?? "0";
-
-            dgvExpiringUnits.Rows.Clear();
-            Dictionary<string, int> expiringUnits = await bloodUnitService.getExpiringUnitsAsync();
-            foreach (var expiryUnit in expiringUnits)
+            if (_isLoadingData) return;
+            _isLoadingData = true;
+            try
             {
-                dgvExpiringUnits.Rows.Add(expiryUnit.Key, $"{expiryUnit.Value} days");
-            }
+                DonorStats stats = await donorService.GetDonorStatsAsync();
+                lblTotalDonorCount.Text = stats != null ? stats.TotalDonors.ToString() : "0";
+                string donorThisMonth = _donorService.DonorsThisMonth().ToString();
+                lblTotalDonorInfo.Text = $"+{donorThisMonth} this month";
 
-            dgvPatientRequests.Rows.Clear();
-            var patientRequests = await patientRequestService.GetRecentPatientRequestsAsync();
-            foreach (var request in patientRequests)
-            {
-                int rowIndex = dgvPatientRequests.Rows.Add(
-                    request.patientName,
-                    request.group.ToString(),
-                    request.unitsRequired.ToString(),
-                    string.IsNullOrWhiteSpace(request.doctorName) ? "N/A" : request.doctorName,
-                    request.status.ToString()
-                );
-                dgvPatientRequests.Rows[rowIndex].Tag = request;  
-            }
+                var bloodUnitStats = await bloodUnitService.GetBloodUnitStatsAsync();
+                lblBloodUnitsCount.Text = bloodUnitStats.TotalUnits.ToString() ?? "0";
 
-            dgvPatientRequests.CellFormatting += (s, e) =>
-            {
-                if (e.RowIndex < 0) return;
-                var row = dgvPatientRequests.Rows[e.RowIndex];
-                string status = row.Cells["colStatus"].Value?.ToString();
-                bool isOldPending = status == "Pending" &&
-                                    row.Tag is PatientModel m &&
-                                    m.CreatedAt.Date < DateTime.Today;
+                int totalPatientToday = await patientRequestService.GetAllPatientInDayAsync();
+                lblPatientTodayCount.Text = totalPatientToday.ToString() ?? "0";
+                int patientsPendingToday = await patientRequestService.GetPatientsPendingTodayAsync();
+                lblPatientTodayInfo.Text = $"{patientsPendingToday} in Pending";
 
-                if (isOldPending)
+                int expiringSoonCount = await bloodUnitService.getExpiringSoonCountAsync();
+                lblExpiringSoonCount.Text = expiringSoonCount.ToString() ?? "0";
+                string withInDays = _appSettingRepository.GetSetting("ExpiryThreshold");
+                lblExpiringSoonInfo.Text = $"within {withInDays} days";
+
+                int APlusCount = await bloodUnitService.getBloodGroupCountAsync(BloodGroup.APositive);
+                lblAPlusCount.Text = APlusCount.ToString() ?? "0";
+                int AMiusCount = await bloodUnitService.getBloodGroupCountAsync(BloodGroup.ANegative);
+                lblAMinusCount.Text = AMiusCount.ToString() ?? "0";
+                int BPlusCount = await bloodUnitService.getBloodGroupCountAsync(BloodGroup.BPositive);
+                lblBPlusCount.Text = BPlusCount.ToString() ?? "0";
+                int BMinusCount = await bloodUnitService.getBloodGroupCountAsync(BloodGroup.BNegative);
+                lblBMinusCount.Text = BMinusCount.ToString() ?? "0";
+                int OPlusCount = await bloodUnitService.getBloodGroupCountAsync(BloodGroup.OPositive);
+                lblOPlusCount.Text = OPlusCount.ToString() ?? "0";
+                int OMinusCount = await bloodUnitService.getBloodGroupCountAsync(BloodGroup.ONegative);
+                lblOMinusCount.Text = OMinusCount.ToString() ?? "0";
+                int ABPlusCount = await bloodUnitService.getBloodGroupCountAsync(BloodGroup.ABPositive);
+                lblABPlusCount.Text = ABPlusCount.ToString() ?? "0";
+                int ABMinusCount = await bloodUnitService.getBloodGroupCountAsync(BloodGroup.ABNegative);
+                lblABMinusCount.Text = ABMinusCount.ToString() ?? "0";
+
+                dgvExpiringUnits.Rows.Clear();
+                Dictionary<string, int> expiringUnits = await bloodUnitService.getExpiringUnitsAsync();
+                foreach (var expiryUnit in expiringUnits)
                 {
-                    e.CellStyle.BackColor = AppTheme.OldPatientRecords;
+                    dgvExpiringUnits.Rows.Add(expiryUnit.Key, $"{expiryUnit.Value} days");
                 }
-            };
 
-            dgvExpiringUnits.CurrentCell = null;
-            dgvExpiringUnits.ClearSelection();
+                dgvPatientRequests.Rows.Clear();
+                var patientRequests = await patientRequestService.GetRecentPatientRequestsAsync();
+                foreach (var request in patientRequests)
+                {
+                    int rowIndex = dgvPatientRequests.Rows.Add(
+                        request.patientName,
+                        request.group.ToString(),
+                        request.unitsRequired.ToString(),
+                        string.IsNullOrWhiteSpace(request.doctorName) ? "N/A" : request.doctorName,
+                        request.status.ToString()
+                    );
+                    dgvPatientRequests.Rows[rowIndex].Tag = request;
+                }
 
-            dgvPatientRequests.CurrentCell = null;
-            dgvPatientRequests.ClearSelection();
+                dgvPatientRequests.CellFormatting += (s, e) =>
+                {
+                    if (e.RowIndex < 0) return;
+                    var row = dgvPatientRequests.Rows[e.RowIndex];
+                    string status = row.Cells["colStatus"].Value?.ToString();
+                    bool isOldPending = status == "Pending" &&
+                                        row.Tag is PatientModel m &&
+                                        m.CreatedAt.Date < DateTime.UtcNow.Date;
+
+                    if (isOldPending)
+                    {
+                        e.CellStyle.BackColor = AppTheme.OldPatientRecords;
+                    }
+                };
+
+                dgvExpiringUnits.CurrentCell = null;
+                dgvExpiringUnits.ClearSelection();
+
+                dgvPatientRequests.CurrentCell = null;
+                dgvPatientRequests.ClearSelection();
+            }
+            finally
+            {
+                _isLoadingData = false;
+            }
         }
 
         private void AdminDashboardPage_HandleCreated(object sender, EventArgs e)

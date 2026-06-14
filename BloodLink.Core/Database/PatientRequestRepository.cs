@@ -190,7 +190,8 @@ namespace BloodLink.Core.Database
                 const string sql = @"
                     SELECT PatientName, BloodGroup, UnitsRequired, DoctorName, Status, CreatedAt
                     FROM PatientRequests
-                    WHERE (CreatedAt >= DATEADD(HOUR, -24, GETUTCDATE()) OR Status = 'Pending')
+                    WHERE (CAST(CreatedAt AS DATE) = CAST(GETUTCDATE() AS DATE))  OR 
+                    (CAST(CreatedAt AS DATE) = CAST(DATEADD(DAY, -1, GETUTCDATE()) AS DATE) AND Status = 'Pending')  -- only yesterday's pending
                     ORDER BY CreatedAt DESC;";
 
                 using var command = new SqlCommand(sql, connection);

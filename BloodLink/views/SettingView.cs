@@ -9,14 +9,14 @@ using System.Windows.Forms;
 
 namespace BloodLink.Pages
 {
-    public partial class SettingPage : UserControl
+    public partial class SettingView : UserControl
     {
         private readonly IAppSettingRepository _appSettingRepository = new AppSettingsRepository();
         private readonly PaintHelper _paintHelper = new PaintHelper();
         private MouseClickFilter _mouseFilter;
         private readonly DashboardShell _dashboard;
 
-        public SettingPage(DashboardShell dashboard)
+        public SettingView(DashboardShell dashboard)
         {
             InitializeComponent();
             _dashboard = dashboard;

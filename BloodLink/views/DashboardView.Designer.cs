@@ -1,6 +1,6 @@
 ﻿namespace BloodLink.Pages
 {
-    partial class AdminDashboardPage
+    partial class DashboardView
     {
         private System.ComponentModel.IContainer components = null;
 

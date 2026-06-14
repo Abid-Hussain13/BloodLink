@@ -1,6 +1,6 @@
 ﻿namespace BloodLink.Pages
 {
-    partial class ReportsPage
+    partial class ReportsView
     {
         /// <summary> 
         /// Required designer variable.
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ReportsPage));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ReportsView));
             tlpReports = new TableLayoutPanel();
             tblFirstRow = new TableLayoutPanel();
             tlpUnitsExpired = new TableLayoutPanel();

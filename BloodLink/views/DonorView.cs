@@ -1,19 +1,20 @@
-﻿using BloodLink.Forms;
-using BloodLink.Helpers;
+﻿using BloodLink.Core.Interfaces;
 using BloodLink.Core.Models;
+using BloodLink.Forms;
+using BloodLink.Helpers;
 using BloodLink.Services;
 using System.Globalization;
 
 namespace BloodLink.Pages
 {
-    public partial class DonorPage : UserControl
+    public partial class DonorView : UserControl ,IRefreshablePage
     {
         private DonorService _DonorService;
         private readonly User _currentUser;
         private PaintHelper _paintHelper = new PaintHelper();
         private bool _allowSelection = false;
 
-        public DonorPage(DonorService _service, User user)
+        public DonorView(DonorService _service, User user)
         {
             InitializeComponent();
             applyTheme();
@@ -90,7 +91,10 @@ namespace BloodLink.Pages
         {
             throw new NotImplementedException();
         }
-
+        public void RefreshPageData()
+        {
+            loadData();
+        }
         private void DonorPage_HandleCreated(object sender, EventArgs e)
         {
             loadData();
@@ -120,7 +124,7 @@ namespace BloodLink.Pages
 
         private void loadData()
         {
-            dgvDonors.Rows.Clear(); // Ensure rows clear accurately on reload
+            dgvDonors.Rows.Clear(); 
             InsertSpacerRow();
 
             var textInfo = CultureInfo.CurrentCulture.TextInfo;
@@ -128,7 +132,6 @@ namespace BloodLink.Pages
 
             foreach (Donor donor in donors)
             {
-                // Capitalizes the first letter of each word properly
                 string formattedName = !string.IsNullOrWhiteSpace(donor.FullName) ? textInfo.ToTitleCase(donor.FullName.ToLower()) : "";
                 string formattedCity = !string.IsNullOrWhiteSpace(donor.City) ? textInfo.ToTitleCase(donor.City.ToLower()) : "";
 

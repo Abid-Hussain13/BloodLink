@@ -1,6 +1,6 @@
 ﻿namespace BloodLink.Pages
 {
-    partial class SettingPage
+    partial class SettingView
     {
         /// <summary> 
         /// Required designer variable.

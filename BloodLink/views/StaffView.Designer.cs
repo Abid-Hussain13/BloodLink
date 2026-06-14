@@ -1,6 +1,6 @@
 ﻿namespace BloodLink.Pages
 {
-    partial class StaffPage
+    partial class StaffView
     {
         /// <summary> 
         /// Required designer variable.
