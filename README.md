@@ -60,11 +60,11 @@ The application uses **role-based access control** with two roles: `Admin` and `
 | | |
 |---|---|
 | <img src="screenshots/screenshot-1.png" width="400" /> | <img src="screenshots/screenshot-2.png" width="400" /> |
-| *Screenshot 1* | *Screenshot 2* |
+| *Dashboard* | *Blood Inventory* |
 | <img src="screenshots/screenshot-3.png" width="400" /> | <img src="screenshots/screenshot-4.png" width="400" /> |
-| *Screenshot 3* | *Screenshot 4* |
+| *Patients* | *Reports* |
 | <img src="screenshots/screenshot-5.png" width="400" /> | <img src="screenshots/screenshot-6.png" width="400" /> |
-| *Screenshot 5* | *Screenshot 6* |
+| *Staff* | *Settings* |
 
 ---
 
