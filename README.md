@@ -8,6 +8,7 @@ BloodLink is a desktop application built with **C# (.NET, WinForms)** designed t
 
 - [About the Project](#about-the-project)
 - [Features](#features)
+- [Screenshots](#screenshots)
 - [Project Structure](#project-structure)
 - [Tech Stack](#tech-stack)
 - [Database Schema](#database-schema)
@@ -51,6 +52,19 @@ The application uses **role-based access control** with two roles: `Admin` and `
 - ⚙️ **Settings** — Configure session timeout and low-stock expiry threshold
 - 🌓 **Dark/Light Theme Toggle** — Persistent theming across the application
 - ⏱️ **Auto-Expiry** — Background timer automatically marks expired blood units
+
+---
+
+## 📸 Screenshots
+
+| | |
+|---|---|
+| <img src="screenshots/screenshot-1.png" width="400" /> | <img src="screenshots/screenshot-2.png" width="400" /> |
+| *Screenshot 1* | *Screenshot 2* |
+| <img src="screenshots/screenshot-3.png" width="400" /> | <img src="screenshots/screenshot-4.png" width="400" /> |
+| *Screenshot 3* | *Screenshot 4* |
+| <img src="screenshots/screenshot-5.png" width="400" /> | <img src="screenshots/screenshot-6.png" width="400" /> |
+| *Screenshot 5* | *Screenshot 6* |
 
 ---
 
